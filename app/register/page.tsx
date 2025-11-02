@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/card';
 import { UserPlus, Loader2 } from 'lucide-react';
 
+
+// Register page sayfası logic buradan itibaren başlıyor ....
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -81,6 +83,7 @@ export default function RegisterPage() {
     }));
   };
 
+  // Register page sayfası logic buradan itibaren bitiyor <-> ShadCN UI Component Yapısı
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
       <Card className="w-full max-w-md bg-white shadow-lg">

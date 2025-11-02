@@ -13,7 +13,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For now, allow all routes - you can add session checking here
   return NextResponse.next();
 }
 
