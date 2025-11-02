@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Çevre değişkenleri ve gizli anahtarlar
+.env
+.env.local
+.env.development
+.env.production
+
+# Bağımlılıklar
+/node_modules
