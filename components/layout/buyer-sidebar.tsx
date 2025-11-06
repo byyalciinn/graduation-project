@@ -1,6 +1,8 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
   Home,
@@ -18,7 +20,6 @@ import {
   MapPin,
   Shield,
   ChevronDown,
-  Package,
 } from "lucide-react"
 
 import {
@@ -44,132 +45,163 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProfileModal } from "@/components/modals/profile-modal"
+import { SettingsModal } from "@/components/modals/settings-modal"
 
-// Ana Bölüm
+// Main Section
 const mainItems = [
   {
-    title: "Ana Sayfa",
+    title: "Home",
     url: "/buyer-dashboard",
     icon: Home,
   },
 ]
 
-// Ürün Bulma ve İstek Bölümü
+// Product Search & Request
 const productRequestItems = [
   {
-    title: "İsteklerim/Taleplerim",
+    title: "My Requests",
     url: "/buyer-dashboard/requests",
     icon: FileText,
   },
   {
-    title: "Yeni Talep Oluştur",
+    title: "Create New Request",
     url: "/buyer-dashboard/requests/new",
     icon: PlusCircle,
   },
   {
-    title: "Kaydedilen Ürünler",
+    title: "Saved Products",
     url: "/buyer-dashboard/saved-products",
     icon: Bookmark,
   },
   {
-    title: "Tekliflerim",
+    title: "My Offers",
     url: "/buyer-dashboard/offers",
     icon: Tag,
-    badge: "5",
   },
 ]
 
-// İşlem ve Sipariş Bölümü
+// Orders & Transactions
 const orderItems = [
   {
-    title: "Siparişlerim",
+    title: "My Orders",
     url: "/buyer-dashboard/orders",
     icon: ShoppingCart,
   },
   {
-    title: "Ödeme Geçmişi",
+    title: "Payment History",
     url: "/buyer-dashboard/payments",
     icon: CreditCard,
   },
   {
-    title: "İade ve İptal",
+    title: "Returns & Cancellations",
     url: "/buyer-dashboard/returns",
     icon: RotateCcw,
   },
 ]
 
-// İletişim ve Destek Bölümü
+// Communication & Support
 const communicationItems = [
   {
-    title: "Mesajlar/Gelen Kutusu",
+    title: "Messages",
     url: "/buyer-dashboard/messages",
     icon: MessageSquare,
-    badge: "3",
   },
   {
-    title: "Bildirimler",
+    title: "Notifications",
     url: "/buyer-dashboard/notifications",
     icon: Bell,
-    badge: "12",
   },
   {
-    title: "Yardım/Destek",
+    title: "Help & Support",
     url: "/buyer-dashboard/support",
     icon: HelpCircle,
   },
 ]
 
-// Hesap Yönetimi
+// Account Management
 const accountItems = [
   {
-    title: "Profil Bilgileri",
+    title: "Profile Information",
     url: "/buyer-dashboard/profile",
     icon: User,
   },
   {
-    title: "Adreslerim",
+    title: "My Addresses",
     url: "/buyer-dashboard/addresses",
     icon: MapPin,
   },
   {
-    title: "Güvenlik",
+    title: "Security",
     url: "/buyer-dashboard/security",
     icon: Shield,
   },
 ]
 
+interface UserData {
+  id: string
+  name: string | null
+  email: string
+  image: string | null
+  role: string | null
+}
+
 export function BuyerSidebar() {
   const pathname = usePathname()
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/user/me")
+      if (response.ok) {
+        const data = await response.json()
+        setUserData(data)
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    }
+  }
+
+  const getInitials = (name: string | null) => {
+    if (!name) return "AL"
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <Link href="/buyer-dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Package className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    Alıcı Paneli
-                  </span>
-                  <span className="truncate text-xs">
-                    Buyer Dashboard
-                  </span>
-                </div>
-                <ChevronDown className="ml-auto" />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="sticky top-0 z-10 bg-sidebar border-b">
+        <div className="flex items-center gap-3 p-4">
+          <Link href="/buyer-dashboard" className="flex items-center gap-3 flex-1">
+            <Image 
+              src="/logo.png" 
+              alt="Woopy Logo" 
+              width={48} 
+              height={48}
+              className="object-contain flex-shrink-0"
+              priority
+            />
+            <span className="text-2xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+              Woopy
+            </span>
+          </Link>
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Ana Bölüm */}
+        {/* Main Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Ana Bölüm</SidebarGroupLabel>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => {
@@ -183,7 +215,7 @@ export function BuyerSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -194,9 +226,9 @@ export function BuyerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Ürün Bulma ve İstek Bölümü */}
+        {/* Product Search & Request */}
         <SidebarGroup>
-          <SidebarGroupLabel>Ürün Bulma ve İstek</SidebarGroupLabel>
+          <SidebarGroupLabel>Product Search & Request</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {productRequestItems.map((item) => {
@@ -210,13 +242,8 @@ export function BuyerSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
-                        {item.badge && (
-                          <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground">
-                            {item.badge}
-                          </Badge>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -226,9 +253,9 @@ export function BuyerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* İşlem ve Sipariş Bölümü */}
+        {/* Orders & Transactions */}
         <SidebarGroup>
-          <SidebarGroupLabel>İşlem ve Sipariş</SidebarGroupLabel>
+          <SidebarGroupLabel>Orders & Transactions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {orderItems.map((item) => {
@@ -242,7 +269,7 @@ export function BuyerSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -253,9 +280,9 @@ export function BuyerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* İletişim ve Destek Bölümü */}
+        {/* Communication & Support */}
         <SidebarGroup>
-          <SidebarGroupLabel>İletişim ve Destek</SidebarGroupLabel>
+          <SidebarGroupLabel>Communication & Support</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {communicationItems.map((item) => {
@@ -269,13 +296,8 @@ export function BuyerSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
-                        {item.badge && (
-                          <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground">
-                            {item.badge}
-                          </Badge>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -285,9 +307,9 @@ export function BuyerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Hesap Yönetimi */}
+        {/* Account Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>Hesap Yönetimi</SidebarGroupLabel>
+          <SidebarGroupLabel>Account Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {accountItems.map((item) => {
@@ -301,7 +323,7 @@ export function BuyerSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -323,15 +345,15 @@ export function BuyerSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src="/avatar.png" alt="User" />
+                    <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Buyer"} />
                     <AvatarFallback className="rounded-lg">
-                      AL
+                      {getInitials(userData?.name || null)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Alıcı</span>
+                    <span className="truncate font-semibold">{userData?.name || "Buyer"}</span>
                     <span className="truncate text-xs">
-                      buyer@example.com
+                      {userData?.email || "buyer@example.com"}
                     </span>
                   </div>
                   <ChevronDown className="ml-auto size-4" />
@@ -346,25 +368,31 @@ export function BuyerSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src="/avatar.png" alt="User" />
-                      <AvatarFallback className="rounded-lg">AL</AvatarFallback>
+                      <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Buyer"} />
+                      <AvatarFallback className="rounded-lg">{getInitials(userData?.name || null)}</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Alıcı</span>
-                      <span className="truncate text-xs">buyer@example.com</span>
+                      <span className="truncate font-semibold">{userData?.name || "Buyer"}</span>
+                      <span className="truncate text-xs">{userData?.email || "buyer@example.com"}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link href="/buyer-dashboard/profile">Profil</Link>
+                <DropdownMenuItem onClick={() => setProfileModalOpen(true)}>
+                  Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/buyer-dashboard/security">Ayarlar</Link>
+                <DropdownMenuItem onClick={() => setSettingsModalOpen(true)}>
+                  Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  Çıkış Yap
+                <DropdownMenuItem
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                  onClick={async () => {
+                    const { signOut } = await import('next-auth/react');
+                    await signOut({ callbackUrl: '/login' });
+                  }}
+                >
+                  Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -373,6 +401,10 @@ export function BuyerSidebar() {
       </SidebarFooter>
 
       <SidebarRail />
+
+      {/* Modals */}
+      <ProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
+      <SettingsModal open={settingsModalOpen} onOpenChange={setSettingsModalOpen} />
     </Sidebar>
   )
 }

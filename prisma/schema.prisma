@@ -11,16 +11,28 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  id             String           @id @default(cuid())
+  name           String?
+  email          String           @unique
+  emailVerified  DateTime?
+  password       String
+  image          String?
+  
+  // Onboarding fields
+  role           String?          // 'buyer' or 'seller'
+  categories     String[]         @default([])
+  city           String?
+  postalCode     String?
+  notifications  Boolean          @default(true)
+  bio            String?
+  onboardingCompleted Boolean      @default(false)
+  
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  productRequests ProductRequest[]
+  sentOffers     Offer[]          @relation("SellerOffers")
 
   @@map("users")
 }
@@ -62,4 +74,69 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model ProductRequest {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Temel Bilgiler
+  productName       String
+  category          String
+  description       String   @db.Text
+  quantity          Int
+  
+  // Fiyat ve Zaman Bilgileri
+  maxBudget         Float?
+  deliveryCity      String
+  deliveryDistrict  String
+  offerDeadline     DateTime?
+  
+  // Görsel ve Ek Bilgiler
+  exampleImageUrl   String?
+  brandModel        String?
+  
+  // Dinamik alanlar (JSON olarak saklanacak)
+  dynamicFields     Json?
+  
+  // Durum
+  status            String   @default("active") // active, completed, cancelled
+  
+  offers            Offer[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("product_requests")
+}
+
+model Offer {
+  id                String         @id @default(cuid())
+  
+  // İlişkiler
+  productRequestId  String
+  productRequest    ProductRequest @relation(fields: [productRequestId], references: [id], onDelete: Cascade)
+  
+  sellerId          String
+  seller            User           @relation("SellerOffers", fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  // Teklif Detayları
+  price             Float
+  deliveryTime      Int            // Gün cinsinden teslimat süresi
+  message           String?        @db.Text
+  
+  // Durum
+  status            String         @default("pending") // pending, accepted, rejected, withdrawn
+  
+  // Alıcı yanıtı
+  buyerResponse     String?        @db.Text
+  respondedAt       DateTime?
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@map("offers")
+  @@index([productRequestId])
+  @@index([sellerId])
 }

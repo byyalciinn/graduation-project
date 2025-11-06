@@ -1,20 +1,25 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
-  CheckSquare,
-  MessageSquare,
   Users,
-  Shield,
+  ShoppingBag,
+  Store,
+  FileText,
+  BarChart3,
+  MessageSquare,
   Settings,
   HelpCircle,
   ChevronDown,
-  ChevronRight,
-  Grid3x3,
   Package,
-  AlertCircle,
+  CreditCard,
+  Tag,
+  Bell,
+  Shield,
 } from "lucide-react"
 
 import {
@@ -28,18 +33,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,113 +45,186 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProfileModal } from "@/components/modals/profile-modal"
+import { SettingsModal } from "@/components/modals/settings-modal"
 
-const generalItems = [
+// Main Section
+const mainItems = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/admin-dashboard",
     icon: LayoutDashboard,
   },
+]
+
+// User Management
+const userManagementItems = [
   {
-    title: "Tasks",
-    url: "/dashboard/tasks",
-    icon: CheckSquare,
-  },
-  {
-    title: "Apps",
-    url: "/dashboard/apps",
-    icon: Grid3x3,
-  },
-  {
-    title: "Chats",
-    url: "/dashboard/chats",
-    icon: MessageSquare,
-    badge: "3",
-  },
-  {
-    title: "Users",
-    url: "/dashboard/users",
+    title: "All Users",
+    url: "/admin-dashboard/users",
     icon: Users,
   },
-]
-
-const securedItems = [
   {
-    title: "Sign In",
-    url: "/login",
+    title: "Buyers",
+    url: "/admin-dashboard/buyers",
+    icon: ShoppingBag,
   },
   {
-    title: "Sign Up",
-    url: "/register",
-  },
-  {
-    title: "User Management",
-    url: "/dashboard/users",
+    title: "Sellers",
+    url: "/admin-dashboard/sellers",
+    icon: Store,
   },
 ]
 
-const pagesItems = [
+// Product & Request Management
+const productManagementItems = [
   {
-    title: "Auth",
-    icon: Shield,
-    hasSubmenu: true,
+    title: "Products",
+    url: "/admin-dashboard/products",
+    icon: Package,
   },
   {
-    title: "Errors",
-    icon: AlertCircle,
-    hasSubmenu: true,
+    title: "Requests",
+    url: "/admin-dashboard/requests",
+    icon: FileText,
+  },
+  {
+    title: "Offers",
+    url: "/admin-dashboard/offers",
+    icon: Tag,
   },
 ]
 
-const otherItems = [
+// Order & Payment Management
+const orderManagementItems = [
   {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-    hasSubmenu: true,
+    title: "Orders",
+    url: "/admin-dashboard/orders",
+    icon: ShoppingBag,
   },
   {
-    title: "Help Center",
-    url: "/help",
+    title: "Payments",
+    url: "/admin-dashboard/payments",
+    icon: CreditCard,
+  },
+]
+
+// Analytics & Reports
+const analyticsItems = [
+  {
+    title: "Analytics",
+    url: "/admin-dashboard/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Reports",
+    url: "/admin-dashboard/reports",
+    icon: FileText,
+  },
+]
+
+// Communication & Support
+const communicationItems = [
+  {
+    title: "Messages",
+    url: "/admin-dashboard/messages",
+    icon: MessageSquare,
+    badge: "5",
+  },
+  {
+    title: "Notifications",
+    url: "/admin-dashboard/notifications",
+    icon: Bell,
+    badge: "12",
+  },
+  {
+    title: "Support Tickets",
+    url: "/admin-dashboard/support",
     icon: HelpCircle,
   },
 ]
 
+// System Settings
+const systemItems = [
+  {
+    title: "Settings",
+    url: "/admin-dashboard/settings",
+    icon: Settings,
+  },
+  {
+    title: "Security",
+    url: "/admin-dashboard/security",
+    icon: Shield,
+  },
+]
+
+interface UserData {
+  id: string
+  name: string | null
+  email: string
+  image: string | null
+  role: string | null
+}
+
 export function AppSidebar() {
   const pathname = usePathname()
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/user/me")
+      if (response.ok) {
+        const data = await response.json()
+        setUserData(data)
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    }
+  }
+
+  const getInitials = (name: string | null) => {
+    if (!name) return "AD"
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Package className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    Shadcn Admin
-                  </span>
-                  <span className="truncate text-xs">
-                    Vite + ShadcnUI
-                  </span>
-                </div>
-                <ChevronDown className="ml-auto" />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="sticky top-0 z-10 bg-sidebar border-b">
+        <div className="flex items-center gap-3 p-4">
+          <Link href="/admin-dashboard" className="flex items-center gap-3 flex-1">
+            <Image 
+              src="/logo.png" 
+              alt="Woopy Logo" 
+              width={48} 
+              height={48}
+              className="object-contain flex-shrink-0"
+              priority
+            />
+            <span className="text-2xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+              Woopy
+            </span>
+          </Link>
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* General Section */}
+        {/* Main Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>General</SidebarGroupLabel>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {generalItems.map((item) => {
+              {mainItems.map((item) => {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -165,7 +235,142 @@ export function AppSidebar() {
                       size="default"
                     >
                       <Link href={item.url}>
-                        <item.icon />
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* User Management */}
+        <SidebarGroup>
+          <SidebarGroupLabel>User Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {userManagementItems.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      size="default"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Product & Request Management */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Product & Request Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {productManagementItems.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      size="default"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Order & Payment Management */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Order & Payment Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {orderManagementItems.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      size="default"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Analytics & Reports */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Analytics & Reports</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {analyticsItems.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      size="default"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Communication & Support */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Communication & Support</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {communicationItems.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                      size="default"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
                         <span>{item.title}</span>
                         {item.badge && (
                           <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground">
@@ -181,83 +386,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Secured by Clerk Section */}
+        {/* System Settings */}
         <SidebarGroup>
+          <SidebarGroupLabel>System Settings</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <Collapsible asChild defaultOpen className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Secured by Clerk">
-                      <Shield />
-                      <span>Secured by Clerk</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {securedItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Pages Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Pages</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {pagesItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton tooltip={item.title}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto" />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Other Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Other</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {otherItems.map((item) => {
+              {systemItems.map((item) => {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      asChild={!!item.url}
+                      asChild
                       isActive={isActive}
                       tooltip={item.title}
+                      size="default"
                     >
-                      {item.url ? (
-                        <Link href={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                          {item.hasSubmenu && <ChevronRight className="ml-auto" />}
-                        </Link>
-                      ) : (
-                        <>
-                          <item.icon />
-                          <span>{item.title}</span>
-                          {item.hasSubmenu && <ChevronRight className="ml-auto" />}
-                        </>
-                      )}
+                      <Link href={item.url}>
+                        <item.icon className="h-6 w-6 text-green-600" />
+                        <span>{item.title}</span>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -277,15 +424,15 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src="/avatar.png" alt="Admin" />
+                    <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Admin"} />
                     <AvatarFallback className="rounded-lg">
-                      SN
+                      {getInitials(userData?.name || null)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">satnaing</span>
+                    <span className="truncate font-semibold">{userData?.name || "Admin"}</span>
                     <span className="truncate text-xs">
-                      satnaingdev@gmail.com
+                      {userData?.email || "admin@woopy.com"}
                     </span>
                   </div>
                   <ChevronDown className="ml-auto size-4" />
@@ -300,27 +447,30 @@ export function AppSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src="/avatar.png" alt="Admin" />
-                      <AvatarFallback className="rounded-lg">SN</AvatarFallback>
+                      <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Admin"} />
+                      <AvatarFallback className="rounded-lg">{getInitials(userData?.name || null)}</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">satnaing</span>
-                      <span className="truncate text-xs">satnaingdev@gmail.com</span>
+                      <span className="truncate font-semibold">{userData?.name || "Admin"}</span>
+                      <span className="truncate text-xs">{userData?.email || "admin@woopy.com"}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProfileModalOpen(true)}>
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSettingsModalOpen(true)}>
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Billing
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                  onClick={async () => {
+                    const { signOut } = await import('next-auth/react');
+                    await signOut({ callbackUrl: '/login' });
+                  }}
+                >
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -330,6 +480,10 @@ export function AppSidebar() {
       </SidebarFooter>
 
       <SidebarRail />
+
+      {/* Modals */}
+      <ProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
+      <SettingsModal open={settingsModalOpen} onOpenChange={setSettingsModalOpen} />
     </Sidebar>
   )
 }

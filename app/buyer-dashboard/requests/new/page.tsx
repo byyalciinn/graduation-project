@@ -1,26 +1,18 @@
 import { BuyerDashboardLayout } from "@/components/layout/buyer-dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { MultiStepForm } from "@/components/product-request/multi-step-form"
 
 export default function NewRequestPage() {
   return (
     <BuyerDashboardLayout>
       <div className="space-y-6">
-        <div>
+        <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Yeni Talep Oluştur</h1>
           <p className="text-muted-foreground mt-2">
-            Aradığınız ürün için satıcılara talep gönderin.
+            Aradığınız ürün için satıcılara talep gönderin. Formu adım adım doldurun.
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Talep Formu</CardTitle>
-            <CardDescription>Ürün detaylarını girerek talep oluşturun</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Form içeriği yakında eklenecek...</p>
-          </CardContent>
-        </Card>
+        <MultiStepForm />
       </div>
     </BuyerDashboardLayout>
   )

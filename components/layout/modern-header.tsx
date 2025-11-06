@@ -16,10 +16,10 @@ import { useTheme } from "next-themes"
 import { useState } from "react"
 
 const tabs = [
-  { name: "Overview", href: "/dashboard" },
-  { name: "Customers", href: "/dashboard/users" },
-  { name: "Products", href: "/dashboard/tasks" },
-  { name: "Settings", href: "/dashboard/settings" },
+  { name: "Overview", href: "/admin-dashboard" },
+  { name: "Customers", href: "/admin-dashboard/users" },
+  { name: "Products", href: "/admin-dashboard/tasks" },
+  { name: "Settings", href: "/admin-dashboard/settings" },
 ]
 
 export function ModernHeader() {
