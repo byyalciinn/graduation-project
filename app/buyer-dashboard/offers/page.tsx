@@ -30,14 +30,14 @@ export default function OffersPage() {
     <BuyerDashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gelen Teklifler</h1>
-          <p className="text-muted-foreground mt-2">
-            Taleplerinize gelen satıcı tekliflerini karşılaştırın ve kabul edin.
+          <h1 className="text-3xl font-bold tracking-tight text-[#1F1B24]">Incoming Offers</h1>
+          <p className="text-gray-600 mt-2">
+            Compare seller proposals for your requests and accept the best match.
           </p>
         </div>
 
         {loading ? (
-          <div className="text-center py-12">Yükleniyor...</div>
+          <div className="text-center py-12 text-gray-500">Loading offers...</div>
         ) : (
           <BuyerOffersTable offers={offers} />
         )}

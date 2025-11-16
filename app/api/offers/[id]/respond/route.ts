@@ -11,7 +11,7 @@ const responseSchema = z.object({
 // POST - Teklifi kabul et veya reddet
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -37,9 +37,12 @@ export async function POST(
     const body = await request.json()
     const validatedData = responseSchema.parse(body)
 
+    // Await params for Next.js 15+
+    const { id } = await params
+
     // Teklifi getir ve kullanıcının bu talebin sahibi olduğunu kontrol et
     const offer = await prisma.offer.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         productRequest: true,
       },
@@ -61,7 +64,7 @@ export async function POST(
 
     // Teklifi güncelle
     const updatedOffer = await prisma.offer.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: validatedData.status,
         buyerResponse: validatedData.buyerResponse,
@@ -82,6 +85,69 @@ export async function POST(
       },
     })
 
+    // If offer is accepted, create a payment record and order
+    if (validatedData.status === "accepted") {
+      const payment = await prisma.payment.create({
+        data: {
+          offerId: id,
+          buyerId: user.id,
+          amount: offer.price,
+          status: "pending",
+        },
+      })
+
+      // Generate unique order number
+      const orderCount = await prisma.order.count()
+      const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(3, '0')}`
+
+      // Create order with initial timeline
+      const initialTimeline = [
+        {
+          id: "placed",
+          label: "Order Placed",
+          description: "Your order has been confirmed",
+          timestamp: new Date().toISOString(),
+          completed: true,
+          current: true,
+        },
+        {
+          id: "processing",
+          label: "Processing",
+          description: "Seller is preparing your order",
+          completed: false,
+          current: false,
+        },
+        {
+          id: "shipped",
+          label: "Shipped",
+          description: "Your order is on the way",
+          completed: false,
+          current: false,
+        },
+        {
+          id: "delivered",
+          label: "Delivered",
+          description: "Order delivered to your address",
+          completed: false,
+          current: false,
+        },
+      ]
+
+      await prisma.order.create({
+        data: {
+          buyerId: user.id,
+          offerId: id,
+          paymentId: payment.id,
+          orderNumber,
+          productName: offer.productRequest.productName,
+          totalAmount: offer.price,
+          currentStatus: "placed",
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+          timelineEvents: initialTimeline,
+        },
+      })
+    }
+
     return NextResponse.json(updatedOffer)
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -92,8 +158,16 @@ export async function POST(
     }
 
     console.error("Error responding to offer:", error)
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    })
+    
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     )
   }

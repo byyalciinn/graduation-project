@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,8 +30,8 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
-import { Package, MapPin, Clock } from "lucide-react"
+import { enUS } from "date-fns/locale"
+import { Package, MapPin, Clock, Mail, CheckCircle2, XCircle } from "lucide-react"
 
 interface Offer {
   id: string
@@ -62,33 +63,36 @@ interface OffersTableProps {
 }
 
 export function BuyerOffersTable({ offers }: OffersTableProps) {
+  const router = useRouter()
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null)
   const [responseModalOpen, setResponseModalOpen] = useState(false)
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
   const [responseType, setResponseType] = useState<"accepted" | "rejected">("accepted")
   const [buyerResponse, setBuyerResponse] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [countdown, setCountdown] = useState(5)
 
   const getStatusBadge = (status: string) => {
     if (status === "pending") {
       return (
-        <Badge className="border border-yellow-300 bg-yellow-100 text-yellow-800">
-          Beklemede
+        <Badge className="bg-amber-100 text-amber-700 border border-amber-200">
+          Pending
         </Badge>
       )
     }
 
     const statusConfig: Record<string, { label: string; className: string }> = {
       accepted: {
-        label: "Kabul Edildi",
-        className: "border border-green-200 bg-green-50 text-green-700",
+        label: "Accepted",
+        className: "bg-emerald-100 text-emerald-700 border border-emerald-200",
       },
       rejected: {
-        label: "Reddedildi",
-        className: "border border-red-200 bg-red-50 text-red-700",
+        label: "Rejected",
+        className: "bg-rose-100 text-rose-700 border border-rose-200",
       },
       withdrawn: {
-        label: "Geri Çekildi",
-        className: "border border-muted-200 bg-muted text-muted-foreground",
+        label: "Withdrawn",
+        className: "bg-gray-100 text-gray-600 border border-gray-200",
       },
     }
 
@@ -107,6 +111,19 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
     setResponseModalOpen(true)
     setBuyerResponse("")
   }
+
+  // Countdown timer for success modal
+  useEffect(() => {
+    if (successModalOpen && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else if (successModalOpen && countdown === 0) {
+      // Redirect to payment page
+      router.push(`/buyer-dashboard/offers/${selectedOffer?.id}/payment`)
+    }
+  }, [successModalOpen, countdown, router, selectedOffer])
 
   const handleSubmitResponse = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -129,18 +146,25 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Yanıt gönderilemedi")
+        console.error("API Error Response:", error)
+        throw new Error(error.details || error.error || "Failed to send response")
       }
 
-      alert(`Teklif ${responseType === "accepted" ? "kabul edildi" : "reddedildi"}!`)
       setResponseModalOpen(false)
       setBuyerResponse("")
       
-      // Sayfayı yenile
-      window.location.reload()
+      if (responseType === "accepted") {
+        // Show success modal for accepted offers
+        setSuccessModalOpen(true)
+        setCountdown(5)
+      } else {
+        // For rejected offers, just refresh
+        alert("Offer rejected successfully")
+        window.location.reload()
+      }
     } catch (error) {
       console.error("Error responding to offer:", error)
-      alert(error instanceof Error ? error.message : "Bir hata oluştu")
+      alert(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsSubmitting(false)
     }
@@ -148,35 +172,38 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Gelen Teklifler</CardTitle>
-          <CardDescription>
-            Taleplerinize gelen satıcı tekliflerini inceleyin ve yanıtlayın
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100 bg-gray-50/60">
+          <CardTitle className="text-xl font-semibold text-[#1F1B24] flex items-center gap-2">
+            <Package className="h-5 w-5 text-[#770022]" />
+            Offers from Sellers
+          </CardTitle>
+          <CardDescription className="text-gray-600">
+            Review and respond to seller proposals for your product requests.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {offers.length === 0 ? (
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">Henüz teklif yok</h3>
+              <h3 className="mt-4 text-lg font-semibold text-[#1F1B24]">No offers yet</h3>
               <p className="text-sm text-muted-foreground mt-2">
-                Taleplerinize satıcılar teklif gönderdiğinde burada görünecektir.
+                When sellers submit offers for your requests, they will appear here.
               </p>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-xl border border-gray-200 shadow-sm">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Talebim</TableHead>
-                    <TableHead>Satıcı</TableHead>
-                    <TableHead>Teklif</TableHead>
-                    <TableHead>Teslimat</TableHead>
-                    <TableHead>Mesaj</TableHead>
-                    <TableHead>Durum</TableHead>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead className="text-right">İşlem</TableHead>
+                  <TableRow className="bg-[#770022]/5 text-[#1F1B24]">
+                    <TableHead>My Request</TableHead>
+                    <TableHead>Seller</TableHead>
+                    <TableHead>Offer Price</TableHead>
+                    <TableHead>Delivery</TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Timeline</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -186,34 +213,35 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
                         <div>
                           <p>{offer.productRequest.productName}</p>
                           <p className="text-sm text-muted-foreground">
-                            {offer.productRequest.quantity} adet
+                            {offer.productRequest.quantity} pcs
                           </p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">
-                            {offer.seller.name || "İsimsiz"}
+                            {offer.seller.name || "Anonymous"}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
                             {offer.seller.email}
                           </p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="font-semibold text-green-600">
-                          ₺{offer.price.toLocaleString("tr-TR")}
+                        <span className="font-semibold text-[#0F9D58]">
+                          ₺{offer.price.toLocaleString("en-US")}
                         </span>
                         {offer.productRequest.maxBudget && (
                           <p className="text-xs text-muted-foreground">
-                            Bütçem: ₺{offer.productRequest.maxBudget.toLocaleString("tr-TR")}
+                            My budget: ₺{offer.productRequest.maxBudget.toLocaleString("en-US")}
                           </p>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{offer.deliveryTime} gün</span>
+                          <span>{offer.deliveryTime} days</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -234,13 +262,13 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
                       <TableCell>
                         <div>
                           <p className="text-sm">
-                            {format(new Date(offer.createdAt), "dd MMM yyyy", {
-                              locale: tr,
+                            {format(new Date(offer.createdAt), "PPP", {
+                              locale: enUS,
                             })}
                           </p>
                           {offer.respondedAt && (
                             <p className="text-xs text-muted-foreground">
-                              Yanıt: {format(new Date(offer.respondedAt), "dd MMM", { locale: tr })}
+                              Responded: {format(new Date(offer.respondedAt), "PP", { locale: enUS })}
                             </p>
                           )}
                         </div>
@@ -250,19 +278,20 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
                           <div className="flex gap-2 justify-end">
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                               onClick={() => handleOpenResponseModal(offer, "accepted")}
                             >
-                              Kabul Et
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Accept
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              className="border-rose-300 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                               onClick={() => handleOpenResponseModal(offer, "rejected")}
                             >
-                              Reddet
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
                             </Button>
                           </div>
                         )}
@@ -278,74 +307,164 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
 
       {/* Response Modal */}
       <Dialog open={responseModalOpen} onOpenChange={setResponseModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              Teklifi {responseType === "accepted" ? "Kabul Et" : "Reddet"}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedOffer?.seller.name || "Satıcı"} tarafından gönderilen teklifi{" "}
-              {responseType === "accepted" ? "kabul ediyorsunuz" : "reddediyorsunuz"}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-lg border-none p-0 gap-0 overflow-hidden shadow-2xl"
+        >
+          <DialogTitle className="sr-only">
+            {responseType === "accepted" ? "Accept Offer" : "Reject Offer"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Respond to the seller's offer
+          </DialogDescription>
+          {/* Header */}
+          <div className="bg-[#770022] text-white px-8 py-6 relative text-center sm:text-left">
+            <button
+              type="button"
+              onClick={() => setResponseModalOpen(false)}
+              className="absolute right-6 top-5 rounded-full bg-white/10 p-1.5 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span className="sr-only">Close</span>
+            </button>
+            <h2 className="text-2xl font-bold tracking-tight">
+              {responseType === "accepted" ? "Accept Offer" : "Reject Offer"}
+            </h2>
+            <p className="text-white/90 mt-1 text-base">
+              {responseType === "accepted" ? "Confirm your acceptance" : "Decline this proposal"} from {selectedOffer?.seller.name || "seller"}
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmitResponse} className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg space-y-2">
+          {/* Body */}
+          <form onSubmit={handleSubmitResponse} className="bg-white px-8 py-6 space-y-5">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Ürün:</span>
-                <span className="font-medium">{selectedOffer?.productRequest.productName}</span>
+                <span className="text-sm text-gray-600">Product</span>
+                <span className="font-semibold text-[#1F1B24]">{selectedOffer?.productRequest.productName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Teklif:</span>
-                <span className="font-medium text-green-600">
-                  ₺{selectedOffer?.price.toLocaleString("tr-TR")}
+                <span className="text-sm text-gray-600">Offer Price</span>
+                <span className="font-semibold text-[#0F9D58]">
+                  ₺{selectedOffer?.price.toLocaleString("en-US")}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Teslimat:</span>
-                <span className="font-medium">{selectedOffer?.deliveryTime} gün</span>
+                <span className="text-sm text-gray-600">Delivery Time</span>
+                <span className="font-semibold text-[#1F1B24]">{selectedOffer?.deliveryTime} days</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="buyerResponse">
-                Mesajınız (Opsiyonel)
+              <Label htmlFor="buyerResponse" className="text-sm font-medium text-gray-700">
+                Your Message (Optional)
               </Label>
               <Textarea
                 id="buyerResponse"
                 placeholder={
                   responseType === "accepted"
-                    ? "Teşekkürler, teklifinizi kabul ediyorum..."
-                    : "Maalesef teklifinizi kabul edemiyorum..."
+                    ? "Thank you, I accept your offer..."
+                    : "Unfortunately, I cannot accept this offer..."
                 }
                 rows={4}
                 value={buyerResponse}
                 onChange={(e) => setBuyerResponse(e.target.value)}
+                className="border-gray-300 focus:border-[#770022] focus:ring-[#770022] resize-none"
               />
             </div>
 
-            <div className="flex gap-2 justify-end pt-4">
+            <div className="flex gap-3 justify-end pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setResponseModalOpen(false)}
                 disabled={isSubmitting}
+                className="border-gray-300 hover:bg-gray-50"
               >
-                İptal
+                Cancel
               </Button>
               <Button
                 type="submit"
-                variant={responseType === "accepted" ? "default" : "destructive"}
                 disabled={isSubmitting}
+                className={responseType === "accepted" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-rose-600 hover:bg-rose-700 text-white"}
               >
                 {isSubmitting
-                  ? "Gönderiliyor..."
+                  ? "Sending..."
                   : responseType === "accepted"
-                  ? "Kabul Et"
-                  : "Reddet"}
+                  ? "Accept Offer"
+                  : "Reject Offer"}
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-md border-none p-0 gap-0 overflow-hidden shadow-2xl"
+        >
+          <DialogTitle className="sr-only">Offer Accepted Successfully</DialogTitle>
+          <DialogDescription className="sr-only">
+            Redirecting to payment page
+          </DialogDescription>
+          
+          {/* Success Header */}
+          <div className="bg-emerald-600 text-white px-8 py-6 text-center">
+            <div className="mx-auto w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 className="h-10 w-10" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Congratulations!
+            </h2>
+            <p className="text-white/90 mt-1 text-base">
+              You've accepted the seller's offer
+            </p>
+          </div>
+
+          {/* Success Body */}
+          <div className="bg-white px-8 py-6 space-y-4">
+            <div className="text-center space-y-3">
+              <p className="text-gray-700 leading-relaxed">
+                The offer for <span className="font-semibold text-[#1F1B24]">{selectedOffer?.productRequest.productName}</span> has been successfully accepted. You're being redirected to our secure payment page to complete the transaction.
+              </p>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                <p className="font-medium mb-1">Before making payment:</p>
+                <p>Please review the offer details and seller information one last time.</p>
+              </div>
+
+              <div className="pt-4">
+                <div className="inline-flex items-center justify-center gap-3 bg-[#770022]/10 text-[#770022] px-6 py-3 rounded-full">
+                  <Clock className="h-5 w-5 animate-pulse" />
+                  <span className="font-semibold text-lg">
+                    Redirecting in {countdown} seconds...
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => router.push(`/buyer-dashboard/offers/${selectedOffer?.id}/payment`)}
+              className="w-full bg-[#770022] hover:bg-[#5a0019] text-white"
+              size="lg"
+            >
+              Go to Payment Now
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

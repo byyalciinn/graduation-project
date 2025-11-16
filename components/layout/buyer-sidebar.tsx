@@ -66,13 +66,13 @@ const mainItems = [
 const getButtonClasses = (isActive: boolean) =>
   `relative rounded-xl transition-all duration-200 border border-transparent ${
     isActive
-      ? 'bg-[#F9E3EC] text-[#4F0F28] border-[#F4CBDC] shadow-md shadow-[#770022]/15 hover:bg-[#F6D3E0]'
+      ? 'bg-[#FDECEF] text-[#5C0F27] border-[#FACDD6] shadow-md shadow-[#770022]/15 hover:bg-[#FBD7DF]'
       : 'text-gray-700 hover:bg-gray-50'
   }`
 
 const getIconClasses = (isActive: boolean) =>
   `h-5 w-5 flex-shrink-0 transition-colors ${
-    isActive ? 'text-[#4F0F28]' : 'text-[#770022]'
+    isActive ? 'text-[#5C0F27]' : 'text-[#770022]'
   } group-data-[collapsible=icon]:!text-[#770022]`
 
 // Product Search & Request

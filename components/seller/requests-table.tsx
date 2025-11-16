@@ -388,6 +388,10 @@ export function RequestsTable({ requests }: RequestsTableProps) {
               showCloseButton={false}
               className="max-w-3xl border-none p-0 gap-0 overflow-hidden shadow-2xl"
             >
+              <DialogTitle className="sr-only">Request Details</DialogTitle>
+              <DialogDescription className="sr-only">
+                Detailed information about the selected buyer request
+              </DialogDescription>
               {/* Header */}
               <div className="bg-[#770022] text-white px-8 py-6 relative text-center sm:text-left">
                 <button
