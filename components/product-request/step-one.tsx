@@ -31,25 +31,25 @@ interface StepOneProps {
 }
 
 const categories = [
-  { value: "elektronik", label: "Elektronik", hasDynamicFields: true },
-  { value: "giyim", label: "Giyim" },
-  { value: "ev-yasam", label: "Ev & Yaşam" },
-  { value: "spor-outdoor", label: "Spor & Outdoor" },
-  { value: "kitap-muzik-film", label: "Kitap, Müzik & Film" },
-  { value: "otomotiv", label: "Otomotiv" },
-  { value: "anne-bebek", label: "Anne & Bebek" },
-  { value: "kozmetik", label: "Kozmetik & Kişisel Bakım" },
-  { value: "diger", label: "Diğer" },
+  { value: "elektronik", label: "Electronics", hasDynamicFields: true },
+  { value: "giyim", label: "Apparel" },
+  { value: "ev-yasam", label: "Home & Living" },
+  { value: "spor-outdoor", label: "Sports & Outdoor" },
+  { value: "kitap-muzik-film", label: "Books, Music & Film" },
+  { value: "otomotiv", label: "Automotive" },
+  { value: "anne-bebek", label: "Mom & Baby" },
+  { value: "kozmetik", label: "Cosmetics & Personal Care" },
+  { value: "diger", label: "Other" },
 ]
 
 export function StepOne({ form }: StepOneProps) {
   const selectedCategory = form.watch("category")
 
-  // Dinamik alan yönetimi - Elektronik kategorisi için garanti durumu
+  // Dynamic field management - warranty status for electronics
   const handleCategoryChange = (value: string) => {
     form.setValue("category", value)
     
-    // Elektronik seçildiğinde dinamik alan ekle
+    // If electronics is selected, add warranty dynamic field
     if (value === "elektronik") {
       const currentDynamicFields = form.getValues("dynamicFields") || {}
       form.setValue("dynamicFields", {
@@ -57,7 +57,7 @@ export function StepOne({ form }: StepOneProps) {
         warrantyStatus: "",
       })
     } else {
-      // Diğer kategorilerde garanti alanını kaldır
+      // Remove warranty field for other categories
       const currentDynamicFields = form.getValues("dynamicFields") || {}
       const { warrantyStatus, ...rest } = currentDynamicFields as any
       form.setValue("dynamicFields", rest)
@@ -67,7 +67,7 @@ export function StepOne({ form }: StepOneProps) {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        {/* Ürün Adı ve Miktar - Yan Yana */}
+        {/* Product name & quantity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -76,18 +76,18 @@ export function StepOne({ form }: StepOneProps) {
               <FormItem>
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>Ürün Adı <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Product Name <span className="text-destructive">*</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Aradığınız ürünün kısa ve öz adını girin</p>
+                      <p>Provide a short, descriptive name for the product you need.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <FormControl>
-                  <Input placeholder="Örn: iPhone 15 Pro Max" {...field} />
+                  <Input placeholder="e.g., iPhone 15 Pro Max" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -101,13 +101,13 @@ export function StepOne({ form }: StepOneProps) {
               <FormItem>
                 <div className="flex items-center gap-2">
                   <Hash className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>İstenen Miktar <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Requested Quantity <span className="text-destructive">*</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Kaç adet ürün talep ettiğinizi belirtin</p>
+                      <p>Specify how many items you would like sellers to quote.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -126,7 +126,7 @@ export function StepOne({ form }: StepOneProps) {
           />
         </div>
 
-        {/* Kategori */}
+        {/* Category */}
         <FormField
           control={form.control}
           name="category"
@@ -134,13 +134,13 @@ export function StepOne({ form }: StepOneProps) {
             <FormItem>
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-muted-foreground" />
-                <FormLabel>Kategori <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Ürünün ait olduğu kategoriyi seçin</p>
+                    <p>Select the category that best fits your product.</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -150,7 +150,7 @@ export function StepOne({ form }: StepOneProps) {
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Kategori seçin" />
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -166,18 +166,18 @@ export function StepOne({ form }: StepOneProps) {
           )}
         />
 
-        {/* Dinamik Alan: Garanti Durumu (Sadece Elektronik için) */}
+        {/* Dynamic Field: Warranty Status (only for Electronics) */}
         {selectedCategory === "elektronik" && (
           <FormItem>
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-muted-foreground" />
-              <FormLabel>Garanti Durumu</FormLabel>
+              <FormLabel>Warranty Status</FormLabel>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Elektronik ürünler için garanti durumunu belirtin</p>
+                  <p>Please specify the warranty status for your electronic product.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -195,20 +195,20 @@ export function StepOne({ form }: StepOneProps) {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Garanti durumu seçin" />
+                  <SelectValue placeholder="Select warranty status" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="yeni-garantili">Yeni - Garantili</SelectItem>
-                <SelectItem value="ikinci-el-garantili">İkinci El - Garantili</SelectItem>
-                <SelectItem value="ikinci-el-garantisiz">İkinci El - Garantisiz</SelectItem>
-                <SelectItem value="fark-etmez">Fark Etmez</SelectItem>
+                <SelectItem value="yeni-garantili">New - Under Warranty</SelectItem>
+                <SelectItem value="ikinci-el-garantili">Pre-owned - Under Warranty</SelectItem>
+                <SelectItem value="ikinci-el-garantisiz">Pre-owned - No Warranty</SelectItem>
+                <SelectItem value="fark-etmez">No Preference</SelectItem>
               </SelectContent>
             </Select>
           </FormItem>
         )}
 
-        {/* Açıklama */}
+        {/* Description */}
         <FormField
           control={form.control}
           name="description"
@@ -216,19 +216,19 @@ export function StepOne({ form }: StepOneProps) {
             <FormItem>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <FormLabel>Açıklama/Detaylar <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Description / Details <span className="text-destructive">*</span></FormLabel>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Ürün durumu ve beklentilerinizi detaylı açıklayın</p>
+                    <p>Share condition, expectations, and any important specifics.</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Ürün hakkında detaylı bilgi verin (durum, özellikler, beklentiler vb.)"
+                  placeholder="Describe condition, features, expectations, etc."
                   className="min-h-[120px]"
                   {...field}
                 />

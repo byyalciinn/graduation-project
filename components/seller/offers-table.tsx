@@ -17,8 +17,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
-import { Package, MapPin, Clock, DollarSign } from "lucide-react"
+import { enUS } from "date-fns/locale"
+import { Package, MapPin, Clock, Mail } from "lucide-react"
 
 interface Offer {
   id: string
@@ -50,48 +50,58 @@ interface OffersTableProps {
 
 export function OffersTable({ offers }: OffersTableProps) {
   const getStatusBadge = (status: string) => {
+    if (status === "pending") {
+      return (
+        <Badge className="bg-amber-100 text-amber-700 border border-amber-200">
+          Pending
+        </Badge>
+      )
+    }
+
     const statusConfig: Record<
       string,
       { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
     > = {
-      pending: { label: "Beklemede", variant: "default" },
-      accepted: { label: "Kabul Edildi", variant: "secondary" },
-      rejected: { label: "Reddedildi", variant: "destructive" },
-      withdrawn: { label: "Geri Çekildi", variant: "outline" },
+      accepted: { label: "Accepted", variant: "secondary" },
+      rejected: { label: "Rejected", variant: "destructive" },
+      withdrawn: { label: "Withdrawn", variant: "outline" },
     }
     const config = statusConfig[status] || { label: status, variant: "outline" }
     return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gönderdiğim Teklifler</CardTitle>
-        <CardDescription>
-          Alıcı taleplerine gönderdiğiniz tekliflerin durumunu takip edin
+    <Card className="border-gray-200 shadow-sm">
+      <CardHeader className="border-b border-gray-100 bg-gray-50/60">
+        <CardTitle className="text-xl font-semibold text-[#1F1B24] flex items-center gap-2">
+          <Package className="h-5 w-5 text-[#770022]" />
+          Offers You Submitted
+        </CardTitle>
+        <CardDescription className="text-gray-600">
+          Keep an eye on how buyers respond to your proposals and follow up quickly.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {offers.length === 0 ? (
           <div className="text-center py-12">
             <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">Henüz teklif yok</h3>
+            <h3 className="mt-4 text-lg font-semibold text-[#1F1B24]">No offers yet</h3>
             <p className="text-sm text-muted-foreground mt-2">
-              Taleplere teklif gönderdiğinizde burada görünecektir.
+              When you submit an offer for a buyer request, it will appear here.
             </p>
           </div>
         ) : (
-          <div className="rounded-md border">
+          <div className="rounded-xl border border-gray-200 shadow-sm">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Ürün</TableHead>
-                  <TableHead>Alıcı</TableHead>
-                  <TableHead>Teklifim</TableHead>
-                  <TableHead>Teslimat</TableHead>
-                  <TableHead>Konum</TableHead>
-                  <TableHead>Durum</TableHead>
-                  <TableHead>Tarih</TableHead>
+                <TableRow className="bg-[#770022]/5 text-[#1F1B24]">
+                  <TableHead>Product</TableHead>
+                  <TableHead>Buyer</TableHead>
+                  <TableHead>Your Offer</TableHead>
+                  <TableHead>Delivery Time</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Timeline</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,37 +111,35 @@ export function OffersTable({ offers }: OffersTableProps) {
                       <div>
                         <p>{offer.productRequest.productName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {offer.productRequest.quantity} adet
+                          {offer.productRequest.quantity} pcs
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">
-                          {offer.productRequest.user.name || "İsimsiz"}
+                          {offer.productRequest.user.name || "Anonymous"}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
                           {offer.productRequest.user.email}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-600">
-                          ₺{offer.price.toLocaleString("tr-TR")}
-                        </span>
+                      <div className="flex items-center gap-1 text-[#0F9D58] font-semibold">
+                        ₺{offer.price.toLocaleString("en-US")}
                       </div>
                       {offer.productRequest.maxBudget && (
                         <p className="text-xs text-muted-foreground">
-                          Bütçe: ₺{offer.productRequest.maxBudget.toLocaleString("tr-TR")}
+                          Buyer budget: ₺{offer.productRequest.maxBudget.toLocaleString("en-US")}
                         </p>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{offer.deliveryTime} gün</span>
+                        <span>{offer.deliveryTime} days</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -145,21 +153,21 @@ export function OffersTable({ offers }: OffersTableProps) {
                     <TableCell>
                       {getStatusBadge(offer.status)}
                       {offer.buyerResponse && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {offer.buyerResponse}
+                        <p className="text-xs text-muted-foreground mt-1 italic">
+                          “{offer.buyerResponse}”
                         </p>
                       )}
                     </TableCell>
                     <TableCell>
                       <div>
                         <p className="text-sm">
-                          {format(new Date(offer.createdAt), "dd MMM yyyy", {
-                            locale: tr,
+                          {format(new Date(offer.createdAt), "PPP", {
+                            locale: enUS,
                           })}
                         </p>
                         {offer.respondedAt && (
                           <p className="text-xs text-muted-foreground">
-                            Yanıt: {format(new Date(offer.respondedAt), "dd MMM", { locale: tr })}
+                            Responded: {format(new Date(offer.respondedAt), "PP", { locale: enUS })}
                           </p>
                         )}
                       </div>

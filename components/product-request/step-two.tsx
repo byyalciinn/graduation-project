@@ -32,20 +32,20 @@ import {
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, MapPin, DollarSign, Clock, Info } from "lucide-react"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
+import { enUS } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 
 interface StepTwoProps {
   form: UseFormReturn<ProductRequestFormData>
 }
 
-// Türkiye şehirleri (örnek liste - gerçek uygulamada API'den gelebilir)
+// Turkish cities sample list (in a real app this would come from an API)
 const cities = [
   "İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya",
   "Gaziantep", "Şanlıurfa", "Mersin", "Diyarbakır", "Kayseri", "Eskişehir"
 ].sort()
 
-// İlçeler (şehre göre dinamik olacak - şimdilik örnek)
+// Districts (sample data, would be dynamic per city)
 const districts: Record<string, string[]> = {
   "İstanbul": ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Beyoğlu", "Fatih", "Bakırköy"],
   "Ankara": ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut"],
@@ -59,7 +59,7 @@ export function StepTwo({ form }: StepTwoProps) {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        {/* Şehir ve İlçe - Yan Yana */}
+        {/* City & district */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -68,27 +68,27 @@ export function StepTwo({ form }: StepTwoProps) {
               <FormItem>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>Teslimat Şehri <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Delivery City <span className="text-destructive">*</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Ürünün teslim edileceği şehir</p>
+                      <p>The city where the item should be delivered.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value)
-                    // Şehir değiştiğinde ilçeyi sıfırla
+                    // Reset district when city changes
                     form.setValue("deliveryDistrict", "")
                   }}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Şehir seçin" />
+                      <SelectValue placeholder="Select a city" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -111,13 +111,13 @@ export function StepTwo({ form }: StepTwoProps) {
               <FormItem>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>Teslimat İlçesi <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Delivery District <span className="text-destructive">*</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{selectedCity ? "İlçe seçin" : "Önce şehir seçin"}</p>
+                      <p>{selectedCity ? "Select the district" : "Choose a city first"}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -128,7 +128,7 @@ export function StepTwo({ form }: StepTwoProps) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="İlçe seçin" />
+                      <SelectValue placeholder="Select a district" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -145,7 +145,7 @@ export function StepTwo({ form }: StepTwoProps) {
           />
         </div>
 
-        {/* Bütçe ve Tarih - Yan Yana */}
+        {/* Budget & deadline */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -154,13 +154,13 @@ export function StepTwo({ form }: StepTwoProps) {
               <FormItem>
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>Maksimum Bütçe (₺) <span className="text-muted-foreground">(Önerilir)</span></FormLabel>
+                  <FormLabel>Maximum Budget (₺) <span className="text-muted-foreground">(Optional)</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Bu ürün için ödemeye hazır olduğunuz maksimum tutar</p>
+                      <p>The highest amount you are ready to pay for this product.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -169,7 +169,7 @@ export function StepTwo({ form }: StepTwoProps) {
                     type="number"
                     min="0"
                     step="0.01"
-                    placeholder="Örn: 5000"
+                    placeholder="e.g., 5000"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}
                     value={field.value || ""}
@@ -187,13 +187,13 @@ export function StepTwo({ form }: StepTwoProps) {
               <FormItem className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel>Son Teklif Tarihi <span className="text-muted-foreground">(Önerilir)</span></FormLabel>
+                  <FormLabel>Offer Deadline <span className="text-muted-foreground">(Optional)</span></FormLabel>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Tekliflerin ne zamana kadar kabul edileceği</p>
+                      <p>Set the latest date you can accept offers.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -208,9 +208,9 @@ export function StepTwo({ form }: StepTwoProps) {
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP", { locale: tr })
+                          format(field.value, "PPP", { locale: enUS })
                         ) : (
-                          <span>Tarih seçin</span>
+                          <span>Select a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -236,8 +236,8 @@ export function StepTwo({ form }: StepTwoProps) {
 
         <div className="bg-muted/50 p-4 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <strong>Not:</strong> Konum bilgileri satıcıların size uygun teklifler sunmasına yardımcı olur. 
-            Gelecekte Google Maps entegrasyonu ile otomatik tamamlama özelliği eklenecektir.
+            <strong>Tip:</strong> Accurate location details help sellers offer realistic shipping and pricing options. 
+            A future Google Maps integration will add address auto-complete.
           </p>
         </div>
       </div>

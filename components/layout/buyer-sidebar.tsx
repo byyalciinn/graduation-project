@@ -4,6 +4,12 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { Space_Grotesk } from "next/font/google"
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+})
 import {
   Home,
   FileText,
@@ -56,6 +62,18 @@ const mainItems = [
     icon: Home,
   },
 ]
+
+const getButtonClasses = (isActive: boolean) =>
+  `relative rounded-xl transition-all duration-200 border border-transparent ${
+    isActive
+      ? 'bg-[#F9E3EC] text-[#4F0F28] border-[#F4CBDC] shadow-md shadow-[#770022]/15 hover:bg-[#F6D3E0]'
+      : 'text-gray-700 hover:bg-gray-50'
+  }`
+
+const getIconClasses = (isActive: boolean) =>
+  `h-5 w-5 flex-shrink-0 transition-colors ${
+    isActive ? 'text-[#4F0F28]' : 'text-[#770022]'
+  } group-data-[collapsible=icon]:!text-[#770022]`
 
 // Product Search & Request
 const productRequestItems = [
@@ -179,19 +197,21 @@ export function BuyerSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="sticky top-0 z-10 bg-sidebar border-b">
-        <div className="flex items-center gap-3 p-4">
-          <Link href="/buyer-dashboard" className="flex items-center gap-3 flex-1">
-            <Image 
-              src="/logo.png" 
-              alt="Woopy Logo" 
-              width={48} 
-              height={48}
-              className="object-contain flex-shrink-0"
-              priority
-            />
-            <span className="text-2xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+    <Sidebar collapsible="icon" variant="sidebar" className={spaceGrotesk.className}>
+      <SidebarHeader className="sticky top-0 z-10 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-3 px-6 py-5">
+          <Link href="/buyer-dashboard" className="flex items-center gap-3 flex-1 group">
+            <div className="relative">
+              <Image 
+                src="/logo.png" 
+                alt="Woopy Logo" 
+                width={40} 
+                height={40}
+                className="object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                priority
+              />
+            </div>
+            <span className="text-xl font-semibold tracking-tight text-[#1F1B24] group-data-[collapsible=icon]:hidden transition-colors">
               Woopy
             </span>
           </Link>
@@ -201,8 +221,8 @@ export function BuyerSidebar() {
       <SidebarContent>
         {/* Main Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Main</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {mainItems.map((item) => {
                 const isActive = pathname === item.url
@@ -213,10 +233,11 @@ export function BuyerSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={getButtonClasses(isActive)}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={getIconClasses(isActive)} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -228,8 +249,8 @@ export function BuyerSidebar() {
 
         {/* Product Search & Request */}
         <SidebarGroup>
-          <SidebarGroupLabel>Product Search & Request</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Product Search & Request</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {productRequestItems.map((item) => {
                 const isActive = pathname === item.url
@@ -240,10 +261,11 @@ export function BuyerSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={getButtonClasses(isActive)}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={getIconClasses(isActive)} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -255,8 +277,8 @@ export function BuyerSidebar() {
 
         {/* Orders & Transactions */}
         <SidebarGroup>
-          <SidebarGroupLabel>Orders & Transactions</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Orders & Transactions</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {orderItems.map((item) => {
                 const isActive = pathname === item.url
@@ -267,10 +289,11 @@ export function BuyerSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={getButtonClasses(isActive)}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={getIconClasses(isActive)} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -282,8 +305,8 @@ export function BuyerSidebar() {
 
         {/* Communication & Support */}
         <SidebarGroup>
-          <SidebarGroupLabel>Communication & Support</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Communication & Support</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {communicationItems.map((item) => {
                 const isActive = pathname === item.url
@@ -294,10 +317,11 @@ export function BuyerSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={getButtonClasses(isActive)}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={getIconClasses(isActive)} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -309,8 +333,8 @@ export function BuyerSidebar() {
 
         {/* Account Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>Account Management</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Account Management</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
             <SidebarMenu>
               {accountItems.map((item) => {
                 const isActive = pathname === item.url
@@ -321,10 +345,11 @@ export function BuyerSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={getButtonClasses(isActive)}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={getIconClasses(isActive)} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -335,28 +360,28 @@ export function BuyerSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-gray-100 bg-white">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="mx-3 my-2 rounded-xl hover:bg-gray-50 transition-colors data-[state=open]:bg-gray-50"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="h-9 w-9 rounded-xl ring-2 ring-gray-100">
                     <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Buyer"} />
-                    <AvatarFallback className="rounded-lg">
+                    <AvatarFallback className="rounded-xl bg-[#770022] text-white font-semibold">
                       {getInitials(userData?.name || null)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{userData?.name || "Buyer"}</span>
-                    <span className="truncate text-xs">
+                    <span className="truncate font-semibold text-gray-900">{userData?.name || "Buyer"}</span>
+                    <span className="truncate text-xs text-gray-500">
                       {userData?.email || "buyer@example.com"}
                     </span>
                   </div>
-                  <ChevronDown className="ml-auto size-4" />
+                  <ChevronDown className="ml-auto size-4 text-gray-400" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -386,7 +411,7 @@ export function BuyerSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="cursor-pointer text-red-600 focus:text-red-600"
+                  className="cursor-pointer text-[#770022] focus:text-[#770022] focus:bg-red-50 font-medium"
                   onClick={async () => {
                     const { signOut } = await import('next-auth/react');
                     await signOut({ callbackUrl: '/login' });

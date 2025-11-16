@@ -17,33 +17,33 @@ import { StepReview } from "./step-review"
 
 // Form validation schema
 const formSchema = z.object({
-  // Step 1: Temel Bilgiler
-  productName: z.string().min(3, "Ürün adı en az 3 karakter olmalıdır"),
-  category: z.string().min(1, "Kategori seçimi zorunludur"),
-  description: z.string().min(10, "Açıklama en az 10 karakter olmalıdır"),
-  quantity: z.number().min(1, "Miktar en az 1 olmalıdır"),
+  // Step 1: Basic Information
+  productName: z.string().min(3, "Product name must be at least 3 characters"),
+  category: z.string().min(1, "Category selection is required"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
   
-  // Step 2: Konum ve Bütçe
+  // Step 2: Location and Budget
   maxBudget: z.number().optional().nullable(),
-  deliveryCity: z.string().min(1, "Şehir seçimi zorunludur"),
-  deliveryDistrict: z.string().min(1, "İlçe seçimi zorunludur"),
+  deliveryCity: z.string().min(1, "City selection is required"),
+  deliveryDistrict: z.string().min(1, "District selection is required"),
   offerDeadline: z.date().optional().nullable(),
   
-  // Step 3: Görsel ve Ek Bilgiler
+  // Step 3: Images and Additional Info
   exampleImageUrl: z.string().optional().nullable(),
   brandModel: z.string().optional().nullable(),
   
-  // Dinamik alanlar
+  // Dynamic fields
   dynamicFields: z.record(z.any()).optional().nullable(),
 })
 
 export type ProductRequestFormData = z.infer<typeof formSchema>
 
 const steps = [
-  { id: 1, name: "Temel Bilgiler", description: "Ürün detayları", icon: Package },
-  { id: 2, name: "Konum ve Bütçe", description: "Teslimat ve fiyat", icon: MapPin },
-  { id: 3, name: "Görsel ve Ek Bilgiler", description: "Opsiyonel bilgiler", icon: ImageIcon },
-  { id: 4, name: "Önizleme", description: "Kontrol ve gönder", icon: Eye },
+  { id: 1, name: "Basic Information", description: "Product details", icon: Package },
+  { id: 2, name: "Location & Budget", description: "Delivery and price", icon: MapPin },
+  { id: 3, name: "Images & Additional Info", description: "Optional information", icon: ImageIcon },
+  { id: 4, name: "Preview", description: "Review and submit", icon: Eye },
 ]
 
 export function MultiStepForm() {
@@ -120,17 +120,17 @@ export function MultiStepForm() {
       if (!response.ok) {
         const errorMessage = result.details 
           ? `Validation error: ${JSON.stringify(result.details)}` 
-          : result.error || "Talep oluşturulurken bir hata oluştu"
+          : result.error || "An error occurred while creating the request"
         throw new Error(errorMessage)
       }
 
-      // Başarılı, talep listesine yönlendir
-      alert("Talep başarıyla oluşturuldu!")
+      // Success, redirect to request list
+      alert("Request created successfully!")
       router.push("/buyer-dashboard/requests?success=true")
       router.refresh()
     } catch (error) {
       console.error("Form submission error:", error)
-      alert(`Bir hata oluştu: ${error instanceof Error ? error.message : "Lütfen tekrar deneyin."}`)
+      alert(`An error occurred: ${error instanceof Error ? error.message : "Please try again."}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -152,10 +152,10 @@ export function MultiStepForm() {
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors ${
                     currentStep > step.id
-                      ? "bg-primary border-primary text-primary-foreground"
+                      ? "bg-[#770022] border-[#770022] text-white"
                       : currentStep === step.id
-                      ? "border-primary text-primary bg-primary/10"
-                      : "border-muted text-muted-foreground bg-muted/30"
+                      ? "border-[#770022] text-[#770022] bg-[#770022]/10"
+                      : "border-gray-300 text-gray-400 bg-gray-50"
                   }`}
                 >
                   {currentStep > step.id ? (
@@ -168,13 +168,13 @@ export function MultiStepForm() {
                   <p
                     className={`text-sm font-medium ${
                       currentStep >= step.id
-                        ? "text-foreground"
-                        : "text-muted-foreground"
+                        ? "text-[#1F1B24]"
+                        : "text-gray-500"
                     }`}
                   >
                     {step.name}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     {step.description}
                   </p>
                 </div>
@@ -182,21 +182,21 @@ export function MultiStepForm() {
               {index !== steps.length - 1 && (
                 <div
                   className={`flex-1 h-0.5 mx-2 ${
-                    currentStep > step.id ? "bg-primary" : "bg-muted"
+                    currentStep > step.id ? "bg-[#770022]" : "bg-gray-200"
                   }`}
                 />
               )}
             </div>
           ))}
         </div>
-        <Progress value={progress} className="mt-4" />
+        <Progress value={progress} className="mt-4 bg-[#770022]/20 [&>div]:bg-[#770022]" />
       </div>
 
       {/* Form Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep - 1].name}</CardTitle>
-          <CardDescription>{steps[currentStep - 1].description}</CardDescription>
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100 bg-gray-50/50">
+          <CardTitle className="text-xl font-semibold text-[#1F1B24]">{steps[currentStep - 1].name}</CardTitle>
+          <CardDescription className="text-gray-600">{steps[currentStep - 1].description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -213,14 +213,19 @@ export function MultiStepForm() {
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1 || isSubmitting}
+                  className="border-gray-200 hover:bg-gray-50"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" />
-                  Önceki
+                  Previous
                 </Button>
 
                 {currentStep < steps.length ? (
-                  <Button type="button" onClick={nextStep}>
-                    Sonraki
+                  <Button 
+                    type="button" 
+                    onClick={nextStep}
+                    className="bg-[#770022] hover:bg-[#5a0019] text-white"
+                  >
+                    Next
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : (
@@ -228,14 +233,15 @@ export function MultiStepForm() {
                     type="submit" 
                     disabled={isSubmitting}
                     onClick={() => console.log("Button clicked!", form.formState.errors)}
+                    className="bg-[#770022] hover:bg-[#5a0019] text-white"
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Gönderiliyor...
+                        Submitting...
                       </>
                     ) : (
-                      "Talebi Gönder"
+                      "Submit Request"
                     )}
                   </Button>
                 )}

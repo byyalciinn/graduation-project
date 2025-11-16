@@ -5,17 +5,10 @@ import { ModernDashboardLayout } from "@/components/layout/modern-dashboard-layo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, MoreVertical, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, MoreVertical, ChevronLeft, ChevronRight, Store } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 interface User {
   id: string
@@ -40,11 +33,10 @@ interface UsersResponse {
   }
 }
 
-export default function UsersPage() {
+export default function SellersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({
     page: 1,
@@ -54,17 +46,17 @@ export default function UsersPage() {
   })
 
   useEffect(() => {
-    fetchUsers()
-  }, [page, search, roleFilter])
+    fetchSellers()
+  }, [page, search])
 
-  const fetchUsers = async () => {
+  const fetchSellers = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
         page: page.toString(),
         limit: "10",
+        role: "seller",
         ...(search && { search }),
-        ...(roleFilter !== "all" && { role: roleFilter }),
       })
 
       const response = await fetch(`/api/admin/users?${params}`)
@@ -74,33 +66,20 @@ export default function UsersPage() {
         setPagination(data.pagination)
       }
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error fetching sellers:", error)
     } finally {
       setLoading(false)
     }
   }
 
   const getInitials = (name: string | null) => {
-    if (!name) return "U"
+    if (!name) return "S"
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2)
-  }
-
-  const getRoleBadgeColor = (role: string | null) => {
-    switch (role) {
-      case "admin":
-        return "bg-[#770022] text-white"
-      case "seller":
-        return "bg-blue-50 text-blue-700 border border-blue-200"
-      case "buyer":
-        return "bg-emerald-50 text-emerald-700 border border-emerald-200"
-      default:
-        return "bg-gray-50 text-gray-600 border border-gray-200"
-    }
   }
 
   const formatDate = (dateString: string) => {
@@ -117,60 +96,49 @@ export default function UsersPage() {
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[#1F1B24]">Users Management</h1>
-            <p className="text-gray-600 mt-2 text-base">
-              Manage your platform users, roles, and permissions
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Store className="h-6 w-6 text-blue-600" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-[#1F1B24]">Sellers</h1>
+            </div>
+            <p className="text-gray-600 text-base">
+              Manage sellers and their product offerings
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <p className="text-sm text-gray-500">Total Users</p>
+              <p className="text-sm text-gray-500">Total Sellers</p>
               <p className="text-2xl font-semibold text-[#770022]">{pagination.totalCount}</p>
             </div>
           </div>
         </div>
 
-        {/* Search and filters */}
+        {/* Search */}
         <Card className="border-gray-200 shadow-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  placeholder="Search users by name or email..."
-                  className="pl-10 h-11 border-gray-200 focus:border-[#770022] focus:ring-[#770022]"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value)
-                    setPage(1)
-                  }}
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={(value) => {
-                setRoleFilter(value)
-                setPage(1)
-              }}>
-                <SelectTrigger className="w-[180px] h-11 border-gray-200 focus:border-[#770022] focus:ring-[#770022]">
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="buyer">Buyer</SelectItem>
-                  <SelectItem value="seller">Seller</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                placeholder="Search sellers by name or email..."
+                className="pl-10 h-11 border-gray-200 focus:border-[#770022] focus:ring-[#770022]"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Users table */}
+        {/* Sellers list */}
         <Card className="border-gray-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 bg-gray-50/50">
             <div>
-              <CardTitle className="text-xl font-semibold text-[#1F1B24]">All Users</CardTitle>
+              <CardTitle className="text-xl font-semibold text-[#1F1B24]">All Sellers</CardTitle>
               <CardDescription className="text-gray-600">
-                {loading ? "Loading..." : `Showing ${users.length} of ${pagination.totalCount} users`}
+                {loading ? "Loading..." : `Showing ${users.length} of ${pagination.totalCount} sellers`}
               </CardDescription>
             </div>
           </CardHeader>
@@ -190,7 +158,9 @@ export default function UsersPage() {
               </div>
             ) : users.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No users found</p>
+                <Store className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 font-medium">No sellers found</p>
+                <p className="text-sm text-gray-400 mt-1">Try adjusting your search</p>
               </div>
             ) : (
               <>
@@ -198,12 +168,12 @@ export default function UsersPage() {
                   {users.map((user) => (
                     <div
                       key={user.id}
-                      className="flex items-center justify-between p-5 rounded-xl border border-gray-200 hover:border-[#770022]/30 hover:shadow-md transition-all duration-200 bg-white"
+                      className="flex items-center justify-between p-5 rounded-xl border border-gray-200 hover:border-blue-500/30 hover:shadow-md transition-all duration-200 bg-white"
                     >
                       <div className="flex items-center gap-4 flex-1">
-                        <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                          <AvatarImage src={user.image || undefined} alt={user.name || "User"} />
-                          <AvatarFallback className="bg-[#770022] text-white font-semibold">
+                        <Avatar className="h-12 w-12 ring-2 ring-blue-100">
+                          <AvatarImage src={user.image || undefined} alt={user.name || "Seller"} />
+                          <AvatarFallback className="bg-blue-600 text-white font-semibold">
                             {getInitials(user.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -226,8 +196,8 @@ export default function UsersPage() {
                           <p className="text-lg font-bold text-[#770022]">{user.offersCount}</p>
                         </div>
                         <div className="min-w-[100px]">
-                          <Badge className={`${getRoleBadgeColor(user.role)} font-medium`}>
-                            {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "No Role"}
+                          <Badge className="bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+                            Seller
                           </Badge>
                           {user.onboardingCompleted && (
                             <p className="text-xs text-emerald-600 mt-1.5 font-medium flex items-center gap-1">

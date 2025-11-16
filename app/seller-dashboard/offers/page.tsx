@@ -30,14 +30,14 @@ export default function OffersPage() {
     <SellerDashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tekliflerim</h1>
-          <p className="text-muted-foreground mt-2">
-            Daha önce gönderdiğiniz aktif veya süresi dolmuş tekliflerin takibi.
+          <h1 className="text-3xl font-bold tracking-tight text-[#1F1B24]">My Offers</h1>
+          <p className="text-gray-600 mt-2">
+            Track every offer you've submitted, see their latest status, and follow up with buyers in one place.
           </p>
         </div>
 
         {loading ? (
-          <div className="text-center py-12">Yükleniyor...</div>
+          <div className="text-center py-12 text-gray-500">Loading offers...</div>
         ) : (
           <OffersTable offers={offers} />
         )}

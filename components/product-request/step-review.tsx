@@ -16,7 +16,7 @@ import {
   Hash
 } from "lucide-react"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
+import { enUS } from "date-fns/locale"
 
 interface StepReviewProps {
   form: UseFormReturn<ProductRequestFormData>
@@ -28,38 +28,38 @@ export function StepReview({ form }: StepReviewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-lg border border-green-200 dark:border-green-800">
+      <div className="bg-[#770022]/5 p-6 rounded-lg border border-[#770022]/20">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-green-600 rounded-lg">
+          <div className="p-2 bg-[#770022] rounded-lg">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">Neredeyse Tamamlandı! 🎉</h3>
-            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-              Talep bilgilerinizi kontrol edin ve göndermek için "Talebi Gönder" butonuna tıklayın.
+            <h3 className="text-lg font-semibold text-[#4A0F1C]">Almost there! 🎉</h3>
+            <p className="text-sm text-[#6C1A2C] mt-1">
+              Review the information below and click "Submit Request" to send it to sellers.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Temel Bilgiler */}
+      {/* Basic Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="w-5 h-5" />
-            Temel Bilgiler
+            Basic Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Ürün Adı</p>
+            <p className="text-sm text-muted-foreground">Product Name</p>
             <p className="font-medium">{formData.productName}</p>
           </div>
           
           <Separator />
           
           <div>
-            <p className="text-sm text-muted-foreground">Kategori</p>
+            <p className="text-sm text-muted-foreground">Category</p>
             <Badge variant="secondary" className="mt-1">
               <Tag className="w-3 h-3 mr-1" />
               {formData.category}
@@ -70,7 +70,7 @@ export function StepReview({ form }: StepReviewProps) {
             <>
               <Separator />
               <div>
-                <p className="text-sm text-muted-foreground">Garanti Durumu</p>
+                <p className="text-sm text-muted-foreground">Warranty Status</p>
                 <Badge variant="outline" className="mt-1">
                   {dynamicFields.warrantyStatus}
                 </Badge>
@@ -81,33 +81,33 @@ export function StepReview({ form }: StepReviewProps) {
           <Separator />
           
           <div>
-            <p className="text-sm text-muted-foreground">Açıklama</p>
+            <p className="text-sm text-muted-foreground">Description</p>
             <p className="text-sm mt-1 whitespace-pre-wrap">{formData.description}</p>
           </div>
           
           <Separator />
           
           <div>
-            <p className="text-sm text-muted-foreground">İstenen Miktar</p>
+            <p className="text-sm text-muted-foreground">Requested Quantity</p>
             <p className="font-medium flex items-center gap-1">
               <Hash className="w-4 h-4" />
-              {formData.quantity} adet
+              {formData.quantity} pcs
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Konum ve Bütçe */}
+      {/* Location & Budget */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
-            Konum ve Bütçe
+            Location & Budget
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Teslimat Konumu</p>
+            <p className="text-sm text-muted-foreground">Delivery Location</p>
             <p className="font-medium">
               {formData.deliveryCity} / {formData.deliveryDistrict}
             </p>
@@ -117,10 +117,10 @@ export function StepReview({ form }: StepReviewProps) {
             <>
               <Separator />
               <div>
-                <p className="text-sm text-muted-foreground">Maksimum Bütçe</p>
-                <p className="font-medium flex items-center gap-1 text-green-600 dark:text-green-400">
+                <p className="text-sm text-muted-foreground">Maximum Budget</p>
+                <p className="font-medium flex items-center gap-1 text-[#770022]">
                   <DollarSign className="w-4 h-4" />
-                  {formData.maxBudget.toLocaleString('tr-TR')} ₺
+                  {formData.maxBudget.toLocaleString('en-US')} ₺
                 </p>
               </div>
             </>
@@ -130,10 +130,10 @@ export function StepReview({ form }: StepReviewProps) {
             <>
               <Separator />
               <div>
-                <p className="text-sm text-muted-foreground">Son Teklif Tarihi</p>
+                <p className="text-sm text-muted-foreground">Offer Deadline</p>
                 <p className="font-medium flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {format(formData.offerDeadline, "PPP", { locale: tr })}
+                  {format(formData.offerDeadline, "PPP", { locale: enUS })}
                 </p>
               </div>
             </>
@@ -141,24 +141,24 @@ export function StepReview({ form }: StepReviewProps) {
         </CardContent>
       </Card>
 
-      {/* Ek Bilgiler */}
+      {/* Additional Details */}
       {(formData.exampleImageUrl || formData.brandModel) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ImageIcon className="w-5 h-5" />
-              Ek Bilgiler
+              Additional Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {formData.exampleImageUrl && (
               <div>
-                <p className="text-sm text-muted-foreground">Örnek Resim URL</p>
+                <p className="text-sm text-muted-foreground">Sample Image URL</p>
                 <a 
                   href={formData.exampleImageUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline break-all"
+                  className="text-sm text-[#770022] hover:underline break-all"
                 >
                   {formData.exampleImageUrl}
                 </a>
@@ -169,7 +169,7 @@ export function StepReview({ form }: StepReviewProps) {
               <>
                 {formData.exampleImageUrl && <Separator />}
                 <div>
-                  <p className="text-sm text-muted-foreground">Marka / Model</p>
+                  <p className="text-sm text-muted-foreground">Brand / Model</p>
                   <p className="font-medium">{formData.brandModel}</p>
                 </div>
               </>
@@ -178,10 +178,10 @@ export function StepReview({ form }: StepReviewProps) {
         </Card>
       )}
 
-      <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-        <p className="text-sm text-amber-800 dark:text-amber-200">
-          <strong>Önemli:</strong> Talebiniz gönderildikten sonra satıcılar size teklif göndermeye başlayacaktır. 
-          Teklifleri "Tekliflerim" sayfasından inceleyebilir ve uygun olanı kabul edebilirsiniz.
+      <div className="bg-[#770022]/5 p-4 rounded-lg border border-[#770022]/20">
+        <p className="text-sm text-[#4A0F1C]">
+          <strong>Heads up:</strong> Once your request is submitted, sellers can start sending offers.
+          Review them on the "My Offers" page and accept the one that suits you best.
         </p>
       </div>
     </div>

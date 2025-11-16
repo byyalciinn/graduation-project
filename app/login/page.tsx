@@ -5,12 +5,18 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Space_Grotesk } from 'next/font/google';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { loginSchema } from '@/lib/validations/auth';
 import { z } from 'zod';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -106,41 +112,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div
+      className={`relative min-h-screen flex flex-col lg:flex-row overflow-hidden bg-[#FDFBFB] text-[#1F1B24] ${spaceGrotesk.className}`}
+    >
+      <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
+        <Image
+          src="/logo.png"
+          alt="Woopy Logo"
+          width={36}
+          height={36}
+          className="object-contain"
+        />
+        <span className="text-2xl font-semibold tracking-tight text-[#1F1B24]">Woopy</span>
+      </div>
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center bg-white p-8 overflow-y-auto">
-        <div className="w-full max-w-md space-y-8">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <Image 
-              src="/logo.png" 
-              alt="Woopy Logo" 
-              width={40} 
-              height={40}
-              className="object-contain"
-            />
-            <span className="text-2xl font-bold text-gray-900">Woopy</span>
-          </div>
-
+      <div className="flex-1 flex items-center justify-center px-6 py-10 lg:px-12 bg-white/85 backdrop-blur-xl border-b lg:border-b-0 lg:border-r border-[#E3D7D7] shadow-[0_10px_30px_rgba(191,25,37,0.08)] overflow-y-auto">
+        <div className="w-full max-w-md space-y-10">
           {/* Header */}
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-gray-900">Log in to your account</h1>
-            <p className="text-base font-medium text-gray-600">
-              Welcome back! Please enter your details.
+          <div className="space-y-4">
+            <h1 className="text-4xl font-semibold tracking-tight leading-[1.15]">
+              Giriş yap ve <span className="text-[#AC0C35]">topluluğa</span> katıl
+            </h1>
+            <p className="text-base text-[#4C434F] font-medium">
+              Hesabına erişmek için bilgilerini gir. Hoş geldin!
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-3 text-sm text-[#AC0C35] bg-[#F8D7DA] border border-[#E9B0C0] rounded-lg">
                 {error}
               </div>
             )}
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-900">
+                <Label htmlFor="email" className="text-sm font-semibold tracking-wide">
                   Email
                 </Label>
                 <Input
@@ -152,18 +160,18 @@ export default function LoginPage() {
                   onChange={handleChange}
                   required
                   disabled={isLoading}
-                  className="bg-white border-gray-300 focus:border-green-600 focus:ring-green-600"
+                  className="bg-white/70 border-[#1F1B24]/15 placeholder:text-[#908694] focus:border-[#AC0C35] focus:ring-[#AC0C35] text-base"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-gray-900 font-medium">
+                  <Label htmlFor="password" className="text-sm font-semibold tracking-wide">
                     Password
                   </Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-green-600 hover:text-green-700 font-medium"
+                    className="text-sm font-semibold text-[#AC0C35] hover:text-[#8A0A2A] transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -178,12 +186,12 @@ export default function LoginPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
-                    className="bg-white border-gray-300 focus:border-green-600 focus:ring-green-600 pr-10"
+                    className="bg-white/70 border-[#1F1B24]/15 placeholder:text-[#908694] focus:border-[#AC0C35] focus:ring-[#AC0C35] pr-12"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B5C6B] hover:text-[#1F1B24] transition-colors"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -198,7 +206,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 text-white h-11 font-semibold shadow-sm"
+              className="w-full h-12 font-semibold tracking-wide text-white bg-gradient-to-r from-[#AC0C35] via-[#8A0A2A] to-[#6A081F] hover:opacity-90 transition-opacity shadow-[0_10px_25px_rgba(172,12,53,0.35)]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -215,7 +223,7 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-11 border-gray-300 hover:bg-gray-50 font-semibold shadow-sm"
+              className="w-full h-12 border border-[#1F1B24]/20 hover:bg-white text-[#1F1B24] font-semibold shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
               disabled={isLoading}
               onClick={() => signIn('google')}
             >
@@ -241,11 +249,11 @@ export default function LoginPage() {
             </Button>
 
             {/* Sign up link */}
-            <div className="text-center text-sm text-gray-600">
+            <div className="text-center text-sm text-[#4C434F]">
               Don&apos;t have an account?{' '}
               <Link
                 href="/register"
-                className="text-green-600 hover:text-green-700 font-medium underline"
+                className="font-semibold text-[#AC0C35] hover:text-[#8A0A2A] underline-offset-4"
               >
                 Sign up
               </Link>
@@ -254,81 +262,15 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Side - Illustration */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-green-50 via-green-100 to-emerald-100 items-center justify-center p-8 overflow-hidden">
-        <div className="max-w-xl w-full space-y-6">
-          {/* Header Text */}
-          <div className="space-y-4">
-            <h2 className="text-3xl xl:text-4xl font-extrabold leading-[1.15] tracking-tight text-gray-900">
-              Welcome to <span className="text-green-600 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Woopy</span>.
-              <br />
-              <span className="text-gray-800">The Largest Wholesale Marketplace.</span>
-            </h2>
-            <p className="text-sm xl:text-base text-gray-600 leading-relaxed max-w-lg font-normal">
-              One-stop wholesale business solution of imported products. We ensure product quality, on time delivery and hassle free service.
-            </p>
-            
-            {/* User Stats */}
-            <div className="flex items-center gap-3 pt-2">
-              <div className="flex -space-x-2">
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-200">
-                  <Image
-                    src="https://i.pravatar.cc/150?img=1"
-                    alt="User 1"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-200">
-                  <Image
-                    src="https://i.pravatar.cc/150?img=5"
-                    alt="User 2"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-200">
-                  <Image
-                    src="https://i.pravatar.cc/150?img=9"
-                    alt="User 3"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-200">
-                  <Image
-                    src="https://i.pravatar.cc/150?img=12"
-                    alt="User 4"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <p className="text-gray-700 font-semibold text-sm xl:text-base">
-                20k+ buyers joined with us, now it&apos;s your turn
-              </p>
-            </div>
-          </div>
-
-          {/* Illustration */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-md rounded-2xl shadow-xl transition-all duration-300 group-hover:bg-white/60"></div>
-            <div className="relative p-6">
-              <Image
-                src="/illustrion.png"
-                alt="E-commerce Illustration"
-                width={500}
-                height={350}
-                className="w-full h-auto object-contain drop-shadow-xl transition-transform duration-300 group-hover:scale-[1.02]"
-                priority
-              />
-            </div>
-          </div>
-        </div>
+      {/* Right Side - Background Image */}
+      <div className="relative hidden lg:flex flex-1 items-center justify-center overflow-hidden">
+        <Image
+          src="/login-page-right-background.jpg"
+          alt="Login Background"
+          fill
+          className="object-cover"
+          priority
+        />
       </div>
     </div>
   );

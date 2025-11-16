@@ -4,6 +4,12 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { Space_Grotesk } from "next/font/google"
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+})
 import {
   LayoutDashboard,
   Users,
@@ -199,19 +205,21 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="sticky top-0 z-10 bg-sidebar border-b">
-        <div className="flex items-center gap-3 p-4">
-          <Link href="/admin-dashboard" className="flex items-center gap-3 flex-1">
-            <Image 
-              src="/logo.png" 
-              alt="Woopy Logo" 
-              width={48} 
-              height={48}
-              className="object-contain flex-shrink-0"
-              priority
-            />
-            <span className="text-2xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+    <Sidebar collapsible="icon" variant="sidebar" className={spaceGrotesk.className}>
+      <SidebarHeader className="sticky top-0 z-10 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-3 px-6 py-5">
+          <Link href="/admin-dashboard" className="flex items-center gap-3 flex-1 group">
+            <div className="relative">
+              <Image 
+                src="/logo.png" 
+                alt="Woopy Logo" 
+                width={40} 
+                height={40}
+                className="object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                priority
+              />
+            </div>
+            <span className="text-xl font-semibold tracking-tight text-[#1F1B24] group-data-[collapsible=icon]:hidden transition-colors">
               Woopy
             </span>
           </Link>
@@ -221,8 +229,8 @@ export function AppSidebar() {
       <SidebarContent>
         {/* Main Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Main</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {mainItems.map((item) => {
                 const isActive = pathname === item.url
@@ -233,10 +241,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -248,8 +257,8 @@ export function AppSidebar() {
 
         {/* User Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>User Management</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">User Management</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {userManagementItems.map((item) => {
                 const isActive = pathname === item.url
@@ -260,10 +269,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -275,8 +285,8 @@ export function AppSidebar() {
 
         {/* Product & Request Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>Product & Request Management</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Product & Requests</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {productManagementItems.map((item) => {
                 const isActive = pathname === item.url
@@ -287,10 +297,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -302,8 +313,8 @@ export function AppSidebar() {
 
         {/* Order & Payment Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>Order & Payment Management</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Orders & Payments</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {orderManagementItems.map((item) => {
                 const isActive = pathname === item.url
@@ -314,10 +325,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -329,8 +341,8 @@ export function AppSidebar() {
 
         {/* Analytics & Reports */}
         <SidebarGroup>
-          <SidebarGroupLabel>Analytics & Reports</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Analytics</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {analyticsItems.map((item) => {
                 const isActive = pathname === item.url
@@ -341,10 +353,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -356,8 +369,8 @@ export function AppSidebar() {
 
         {/* Communication & Support */}
         <SidebarGroup>
-          <SidebarGroupLabel>Communication & Support</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">Communication</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {communicationItems.map((item) => {
                 const isActive = pathname === item.url
@@ -368,12 +381,13 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                         {item.badge && (
-                          <Badge className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground">
+                          <Badge className="ml-auto bg-[#770022] text-white text-xs px-2 py-0.5 rounded-full">
                             {item.badge}
                           </Badge>
                         )}
@@ -388,8 +402,8 @@ export function AppSidebar() {
 
         {/* System Settings */}
         <SidebarGroup>
-          <SidebarGroupLabel>System Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-6 py-2 text-xs font-semibold tracking-wider uppercase text-gray-500">System</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3">
             <SidebarMenu>
               {systemItems.map((item) => {
                 const isActive = pathname === item.url
@@ -400,10 +414,11 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={item.title}
                       size="default"
+                      className={`relative rounded-xl transition-all duration-200 ${isActive ? 'bg-[#770022] text-white shadow-lg shadow-[#770022]/20 hover:bg-[#770022]' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <Link href={item.url}>
-                        <item.icon className="h-6 w-6 text-green-600" />
-                        <span>{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3 px-4 py-2.5 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                        <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#770022]'} group-data-[collapsible=icon]:!text-[#770022]`} />
+                        <span className="font-medium truncate">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -414,28 +429,28 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-gray-100 bg-white">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="mx-3 my-2 rounded-xl hover:bg-gray-50 transition-colors data-[state=open]:bg-gray-50"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="h-9 w-9 rounded-xl ring-2 ring-gray-100">
                     <AvatarImage src={userData?.image || "/avatar.png"} alt={userData?.name || "Admin"} />
-                    <AvatarFallback className="rounded-lg">
+                    <AvatarFallback className="rounded-xl bg-[#770022] text-white font-semibold">
                       {getInitials(userData?.name || null)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{userData?.name || "Admin"}</span>
-                    <span className="truncate text-xs">
+                    <span className="truncate font-semibold text-gray-900">{userData?.name || "Admin"}</span>
+                    <span className="truncate text-xs text-gray-500">
                       {userData?.email || "admin@woopy.com"}
                     </span>
                   </div>
-                  <ChevronDown className="ml-auto size-4" />
+                  <ChevronDown className="ml-auto size-4 text-gray-400" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -465,7 +480,7 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="cursor-pointer text-red-600 focus:text-red-600"
+                  className="cursor-pointer text-[#770022] focus:text-[#770022] focus:bg-red-50 font-medium"
                   onClick={async () => {
                     const { signOut } = await import('next-auth/react');
                     await signOut({ callbackUrl: '/login' });
