@@ -52,7 +52,11 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
+  MessageSquare,
+  AlertCircle,
 } from "lucide-react"
+import { NegotiationPanel } from "@/components/buyer/negotiation-panel"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format, formatDistanceToNow } from "date-fns"
 import { enUS } from "date-fns/locale"
 
@@ -76,11 +80,16 @@ interface ProductRequest {
     email: string
   }
   hasOffer?: boolean
+  hasNegotiation?: boolean
   myOffer?: {
     id: string
     status: string
     price: number
     createdAt: Date
+    negotiations?: Array<{
+      id: string
+      createdAt: Date
+    }>
   } | null
 }
 
@@ -94,6 +103,24 @@ export function RequestsTable({ requests }: RequestsTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [offerModalOpen, setOfferModalOpen] = useState(false)
   const [offerRequest, setOfferRequest] = useState<ProductRequest | null>(null)
+  const [negotiationOpen, setNegotiationOpen] = useState(false)
+  const [negotiationRequest, setNegotiationRequest] = useState<ProductRequest | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  React.useEffect(() => {
+    async function fetchUser() {
+      try {
+        const response = await fetch("/api/user")
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentUserId(data.id)
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const getCategoryLabel = (category: string) => {
     const categories: Record<string, string> = {
@@ -111,13 +138,28 @@ export function RequestsTable({ requests }: RequestsTableProps) {
   }
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-      active: { label: "Active", variant: "default" },
+    const statusConfig: Record<
+      string,
+      {
+        label: string
+        variant?: "default" | "secondary" | "destructive" | "outline"
+        className?: string
+      }
+    > = {
+      active: {
+        label: "Active",
+        variant: "default",
+        className: "bg-[#E6F4EA] text-[#0F9D58] border-transparent",
+      },
       completed: { label: "Completed", variant: "secondary" },
       cancelled: { label: "Cancelled", variant: "destructive" },
     }
     const config = statusConfig[status] || { label: status, variant: "outline" }
-    return <Badge variant={config.variant}>{config.label}</Badge>
+    return (
+      <Badge variant={config.variant} className={config.className}>
+        {config.label}
+      </Badge>
+    )
   }
 
   const getTimeRemaining = (deadline: Date | null) => {
@@ -182,6 +224,20 @@ export function RequestsTable({ requests }: RequestsTableProps) {
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Negotiation Notification Banner */}
+            {requests.some(r => r.hasNegotiation) && (
+              <Alert className="border-amber-300 bg-amber-50">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-900">
+                  <p className="font-semibold">Müzakere Talebi</p>
+                  <p className="text-sm mt-1">
+                    {requests.filter(r => r.hasNegotiation).length} alıcı müzakere başlattı. 
+                    Tablodaki sarı "Müzakere" butonuna tıklayarak görüşmelere katılabilirsiniz.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Search Bar */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -280,14 +336,28 @@ export function RequestsTable({ requests }: RequestsTableProps) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-2">
+                                    {request.hasNegotiation && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                        onClick={() => {
+                                          setNegotiationRequest(request)
+                                          setNegotiationOpen(true)
+                                        }}
+                                      >
+                                        <MessageSquare className="h-4 w-4 mr-1" />
+                                        Müzakere
+                                      </Button>
+                                    )}
                                     {request.hasOffer ? (
-                                      <Badge variant="secondary" className="cursor-default">
+                                      <Badge className="cursor-default bg-[#E6F4EA] text-[#0F9D58] border-transparent">
                                         Offer Sent
                                       </Badge>
                                     ) : (
-                                      <Badge 
-                                        variant="default" 
-                                        className="cursor-pointer bg-[#770022] hover:bg-[#770022]/90 text-white"
+                                      <Badge
+                                        variant="default"
+                                        className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                                         onClick={() => handleOpenOfferModal(request)}
                                       >
                                         Send Offer
@@ -576,19 +646,57 @@ export function RequestsTable({ requests }: RequestsTableProps) {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 justify-end pt-4">
+                <div className="flex flex-wrap gap-2 justify-end pt-4 items-center">
+                  {selectedRequest.hasOffer && (
+                    <Badge className="bg-[#E6F4EA] text-[#0F9D58] border-transparent order-last sm:order-first">
+                      Offer already sent
+                    </Badge>
+                  )}
                   <Button variant="outline" className="border-[#770022]/30 text-[#770022]">
                     Contact Buyer
                   </Button>
-                  <Button className="bg-[#770022] hover:bg-[#770022]/90 text-white">
-                    Send Offer
-                  </Button>
+                  {!selectedRequest.hasOffer && (
+                    <Button
+                      className="bg-[#770022] hover:bg-[#770022]/90 text-white"
+                      onClick={() => handleOpenOfferModal(selectedRequest)}
+                    >
+                      Send Offer
+                    </Button>
+                  )}
                 </div>
               </div>
             </DialogContent>
           </Dialog>
         )}
       </CardContent>
+
+      {/* Negotiation Dialog */}
+      <Dialog open={negotiationOpen} onOpenChange={setNegotiationOpen}>
+        <DialogContent className="!max-w-[95vw] max-h-[95vh] p-0 gap-0 overflow-hidden">
+          <DialogTitle className="sr-only">Negotiation Panel</DialogTitle>
+          {negotiationRequest?.myOffer && currentUserId && (
+            <NegotiationPanel
+              offerId={negotiationRequest.myOffer.id}
+              offer={{
+                price: negotiationRequest.myOffer.price,
+                deliveryTime: 7,
+                productRequest: {
+                  productName: negotiationRequest.productName,
+                  maxBudget: negotiationRequest.maxBudget,
+                  quantity: negotiationRequest.quantity,
+                  deliveryCity: negotiationRequest.deliveryCity,
+                },
+              }}
+              currentUserId={currentUserId}
+              userType="seller"
+              buyerInfo={{
+                name: negotiationRequest.user.name,
+                email: negotiationRequest.user.email,
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

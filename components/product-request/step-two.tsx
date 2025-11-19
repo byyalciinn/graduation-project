@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { ProductRequestFormData } from "./multi-step-form"
 import {
@@ -8,6 +9,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,7 +32,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, MapPin, DollarSign, Clock, Info } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CalendarIcon, MapPin, DollarSign, Clock, Info, Sparkles, Loader2, TrendingUp } from "lucide-react"
 import { format } from "date-fns"
 import { enUS } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -55,6 +58,47 @@ const districts: Record<string, string[]> = {
 export function StepTwo({ form }: StepTwoProps) {
   const selectedCity = form.watch("deliveryCity")
   const availableDistricts = selectedCity ? districts[selectedCity] || [] : []
+  const [priceResearching, setPriceResearching] = useState(false)
+  const [priceResult, setPriceResult] = useState<any>(null)
+
+  const handlePriceResearch = async () => {
+    const productName = form.getValues("productName")
+    const quantity = form.getValues("quantity")
+    const category = form.getValues("category")
+
+    if (!productName) {
+      alert("Önce ürün adını girmelisiniz!")
+      return
+    }
+
+    setPriceResearching(true)
+    setPriceResult(null)
+
+    try {
+      const response = await fetch("/api/ai/price-research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName, quantity, category }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Price research failed")
+      }
+
+      const data = await response.json()
+      setPriceResult(data.data)
+      
+      // Auto-fill recommended budget
+      if (data.data.recommendedBudget) {
+        form.setValue("maxBudget", data.data.recommendedBudget)
+      }
+    } catch (error) {
+      console.error("Price research error:", error)
+      alert("Fiyat araştırması başarısız oldu. Lütfen tekrar deneyin.")
+    } finally {
+      setPriceResearching(false)
+    }
+  }
 
   return (
     <TooltipProvider>
@@ -164,17 +208,56 @@ export function StepTwo({ form }: StepTwoProps) {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="e.g., 5000"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}
-                    value={field.value || ""}
-                  />
-                </FormControl>
+                <div className="flex gap-2">
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="e.g., 5000"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePriceResearch}
+                    disabled={priceResearching}
+                    className="flex-shrink-0 border-emerald-200 hover:bg-emerald-50"
+                  >
+                    {priceResearching ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 text-emerald-600" />
+                    )}
+                  </Button>
+                </div>
+                <FormDescription className="text-xs text-emerald-700">
+                  🤖 Ne kadar fiyat yazacağınızı bilmiyor musunuz? Yanındaki butona basın, AI sizin için fiyat araştırması yapsın!
+                </FormDescription>
+                {priceResult && (
+                  <Alert className="mt-2 border-emerald-200 bg-emerald-50">
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <AlertDescription className="text-sm">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-emerald-900">
+                          Önerilen Bütçe: {priceResult.recommendedBudget?.toLocaleString("tr-TR")} ₺
+                        </p>
+                        <p className="text-emerald-700">
+                          Fiyat Aralığı: {priceResult.minPrice?.toLocaleString("tr-TR")} - {priceResult.maxPrice?.toLocaleString("tr-TR")} ₺
+                        </p>
+                        {priceResult.explanation && (
+                          <p className="text-xs text-emerald-600 mt-1">
+                            {priceResult.explanation}
+                          </p>
+                        )}
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <FormMessage />
               </FormItem>
             )}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Dialog,
   DialogContent,
@@ -12,11 +13,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { Sparkles, Loader2, Lightbulb } from "lucide-react"
 
 interface ProductRequest {
   id: string
   productName: string
+  category: string
+  description: string
+  quantity: number
   maxBudget: number | null
+  deliveryCity: string
+  deliveryDistrict: string
+  offerDeadline: Date | null
 }
 
 interface SendOfferModalProps {
@@ -28,11 +42,53 @@ interface SendOfferModalProps {
 
 export function SendOfferModal({ request, open, onOpenChange, onSuccess }: SendOfferModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiSuggestion, setAiSuggestion] = useState<any>(null)
   const [offerForm, setOfferForm] = useState({
     price: "",
     deliveryTime: "",
     message: "",
   })
+
+  const handleGenerateOffer = async () => {
+    if (!request) return
+
+    setIsGenerating(true)
+    setAiSuggestion(null)
+
+    try {
+      const response = await fetch("/api/ai/generate-offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productRequest: request,
+          sellerProfile: {
+            city: "İstanbul", // TODO: Get from actual seller profile
+            categories: [request.category],
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Offer generation failed")
+      }
+
+      const data = await response.json()
+      setAiSuggestion(data.data)
+      
+      // Auto-fill form with AI suggestions
+      setOfferForm({
+        price: data.data.price.toString(),
+        deliveryTime: data.data.deliveryTime.toString(),
+        message: data.data.message,
+      })
+    } catch (error) {
+      console.error("Error generating offer:", error)
+      alert("AI teklif oluşturma başarısız oldu. Lütfen manuel olarak doldurun.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,6 +174,17 @@ export function SendOfferModal({ request, open, onOpenChange, onSuccess }: SendO
 
         {/* White Form Section */}
         <form onSubmit={handleSubmit} className="bg-white px-6 py-5 space-y-5">
+          {aiSuggestion && (
+            <Alert className="border-emerald-200 bg-emerald-50">
+              <Lightbulb className="h-4 w-4 text-emerald-600" />
+              <AlertDescription className="text-sm text-emerald-900">
+                <p className="font-semibold mb-1">AI Önerisi Uygulandı</p>
+                <p className="text-xs text-emerald-700">
+                  {aiSuggestion.reasoning || "Teklif başarıyla oluşturuldu. İsterseniz düzenleyebilirsiniz."}
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
             <Label htmlFor="price" className="text-sm font-medium text-gray-700">
               Your Price Offer (₺) *
@@ -170,23 +237,48 @@ export function SendOfferModal({ request, open, onOpenChange, onSuccess }: SendO
             />
           </div>
 
-          <div className="flex gap-3 justify-end pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-              className="border-gray-300 hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting} 
-              className="bg-[#770022] hover:bg-[#770022]/90 text-white px-6"
-            >
-              {isSubmitting ? "Sending..." : "Send Offer"}
-            </Button>
+          <div className="flex gap-3 justify-between pt-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleGenerateOffer}
+                    disabled={isGenerating || isSubmitting}
+                    className="border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-900 text-white">
+                  <p className="text-sm">AI ile otomatik teklif oluştur</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting} 
+                className="bg-[#770022] hover:bg-[#770022]/90 text-white px-6"
+              >
+                {isSubmitting ? "Sending..." : "Send Offer"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

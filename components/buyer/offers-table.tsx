@@ -31,7 +31,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { enUS } from "date-fns/locale"
-import { Package, MapPin, Clock, Mail, CheckCircle2, XCircle } from "lucide-react"
+import { Package, MapPin, Clock, Mail, CheckCircle2, XCircle, MessageSquare } from "lucide-react"
+import { NegotiationPanel } from "@/components/buyer/negotiation-panel"
 
 interface Offer {
   id: string
@@ -60,9 +61,21 @@ interface Offer {
 
 interface OffersTableProps {
   offers: Offer[]
+  aiAnalysis?: {
+    analysis: string
+    recommendation: string
+    offers: Offer[]
+    productRequest: {
+      productName: string
+      quantity: number
+    }
+    cached?: boolean
+  } | null
+  aiAnalysisError?: string | null
+  aiAnalysisLoading?: boolean
 }
 
-export function BuyerOffersTable({ offers }: OffersTableProps) {
+export function BuyerOffersTable({ offers, aiAnalysis, aiAnalysisError, aiAnalysisLoading }: OffersTableProps) {
   const router = useRouter()
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null)
   const [responseModalOpen, setResponseModalOpen] = useState(false)
@@ -71,6 +84,25 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
   const [buyerResponse, setBuyerResponse] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState(5)
+  const [negotiationOpen, setNegotiationOpen] = useState(false)
+  const [negotiationOffer, setNegotiationOffer] = useState<Offer | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Fetch current user ID
+    async function fetchUser() {
+      try {
+        const response = await fetch("/api/user")
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentUserId(data.id)
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const getStatusBadge = (status: string) => {
     if (status === "pending") {
@@ -182,7 +214,37 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
             Review and respond to seller proposals for your product requests.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {(aiAnalysisLoading || aiAnalysis || aiAnalysisError) && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              {aiAnalysisLoading && (
+                <div className="flex items-center gap-3 text-gray-600">
+                  <span className="relative flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75 animate-ping"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  </span>
+                  AI teklif analizi yapılıyor...
+                </div>
+              )}
+              {aiAnalysisError && (
+                <div className="text-sm text-red-600">{aiAnalysisError}</div>
+              )}
+              {aiAnalysis && !aiAnalysisLoading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-emerald-900">
+                      AI Önerisi: {aiAnalysis.productRequest.productName} ({aiAnalysis.productRequest.quantity} adet)
+                    </p>
+                    {aiAnalysis.cached && (
+                      <Badge variant="outline" className="text-xs">Önbellekten yüklendi</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-emerald-800">{aiAnalysis.analysis}</p>
+                  <p className="text-sm text-emerald-700 font-medium">Öneri: {aiAnalysis.recommendation}</p>
+                </div>
+              )}
+            </div>
+          )}
           {offers.length === 0 ? (
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -276,6 +338,18 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
                       <TableCell className="text-right">
                         {offer.status === "pending" && (
                           <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-gray-300 bg-gray-50 hover:bg-gray-100"
+                              onClick={() => {
+                                setNegotiationOffer(offer)
+                                setNegotiationOpen(true)
+                              }}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-1" />
+                              Müzakere
+                            </Button>
                             <Button
                               size="sm"
                               className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
@@ -465,6 +539,33 @@ export function BuyerOffersTable({ offers }: OffersTableProps) {
               Go to Payment Now
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Negotiation Dialog */}
+      <Dialog open={negotiationOpen} onOpenChange={setNegotiationOpen}>
+        <DialogContent className="!max-w-[95vw] max-h-[95vh] p-0 gap-0 overflow-hidden">
+          <DialogTitle className="sr-only">Negotiation Panel</DialogTitle>
+          {negotiationOffer && currentUserId && (
+            <NegotiationPanel
+              offerId={negotiationOffer.id}
+              offer={{
+                ...negotiationOffer,
+                productRequest: {
+                  ...negotiationOffer.productRequest,
+                  quantity: negotiationOffer.productRequest.quantity,
+                  deliveryCity: negotiationOffer.productRequest.deliveryCity,
+                },
+                seller: {
+                  name: negotiationOffer.seller.name,
+                  email: negotiationOffer.seller.email,
+                  role: null,
+                },
+              }}
+              currentUserId={currentUserId}
+              userType="buyer"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>

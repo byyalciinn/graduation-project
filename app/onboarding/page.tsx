@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Space_Grotesk } from 'next/font/google';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
   ShoppingBag, 
   Store, 
@@ -16,13 +15,13 @@ import {
   Home, 
   Palette, 
   Dumbbell, 
-  Sparkles,
-  MapPin,
-  Bell,
-  User,
-  Camera,
-  CheckCircle2
+  Sparkles
 } from 'lucide-react';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
 
 interface OnboardingData {
   role: 'buyer' | 'seller' | null;
@@ -30,11 +29,6 @@ interface OnboardingData {
   location: {
     city: string;
     postalCode: string;
-  };
-  notifications: boolean;
-  profile: {
-    photo: string | null;
-    bio: string;
   };
 }
 
@@ -50,15 +44,14 @@ const categories = [
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     role: null,
     categories: [],
     location: { city: '', postalCode: '' },
-    notifications: true,
-    profile: { photo: null, bio: '' },
   });
 
-  const totalSteps = 4;
+  const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
   const handleRoleSelect = (role: 'buyer' | 'seller') => {
@@ -87,17 +80,28 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = async () => {
+    // Show analyzing screen
+    setIsAnalyzing(true);
+
     // Save onboarding data to API
     try {
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          role: data.role,
+          categories: data.categories,
+          city: data.location.city,
+          postalCode: data.location.postalCode,
+        }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
+        // Wait for animation (2.5 seconds)
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
         // Redirect based on role
         if (data.role === 'buyer') {
           router.push('/buyer-dashboard');
@@ -108,10 +112,12 @@ export default function OnboardingPage() {
         }
       } else {
         console.error('Onboarding failed:', result.error);
+        setIsAnalyzing(false);
         alert(result.error || 'Failed to complete onboarding');
       }
     } catch (error) {
       console.error('Onboarding error:', error);
+      setIsAnalyzing(false);
       alert('An error occurred. Please try again.');
     }
   };
@@ -124,26 +130,55 @@ export default function OnboardingPage() {
         return data.categories.length > 0;
       case 3:
         return data.location.city.trim() !== '';
-      case 4:
-        return true;
       default:
         return false;
     }
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4 overflow-hidden">
-      <div className="w-full max-w-3xl h-screen flex flex-col py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Woopy Logo" width={32} height={32} />
-            <h1 className="text-xl font-bold text-gray-900">WOOPY</h1>
+    <div className={`relative min-h-screen bg-[#FDFBFB] flex items-center justify-center p-4 overflow-hidden ${spaceGrotesk.className}`}>
+      {/* Logo - Top Left Corner */}
+      <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
+        <Image
+          src="/logo.png"
+          alt="Woopy Logo"
+          width={36}
+          height={36}
+          className="object-contain"
+        />
+        <span className="text-2xl font-semibold tracking-tight text-[#1F1B24]">Woopy</span>
+      </div>
+
+      {/* Analyzing Screen */}
+      {isAnalyzing ? (
+        <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+          {/* Animated Spinner */}
+          <div className="relative">
+            <div className="w-24 h-24 border-4 border-[#FDECEF] rounded-full"></div>
+            <div className="absolute top-0 left-0 w-24 h-24 border-4 border-[#B0112D] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+
+          {/* Text Content */}
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-bold text-[#1F1B24]">
+              Analyzing your preferences...
+            </h2>
+            <p className="text-lg text-[#4C434F] max-w-md">
+              We're personalizing your experience based on your selections
+            </p>
+          </div>
+
+          {/* Animated Dots */}
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-[#B0112D] rounded-full animate-pulse"></div>
+            <div className="w-3 h-3 bg-[#AC0C35] rounded-full animate-pulse delay-75"></div>
+            <div className="w-3 h-3 bg-[#770022] rounded-full animate-pulse delay-150"></div>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
+      ) : (
+        <div className="w-full max-w-3xl h-screen flex flex-col py-8">
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col overflow-y-auto mt-16">
             {/* Step 1: Role Selection */}
             {currentStep === 1 && (
               <div className="flex flex-col items-center justify-center flex-1 max-w-2xl mx-auto">
@@ -161,18 +196,18 @@ export default function OnboardingPage() {
                     onClick={() => handleRoleSelect('buyer')}
                     className={`p-8 rounded-2xl border-2 transition-all duration-200 ${
                       data.role === 'buyer'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#AC0C35] bg-[#FDECEF] shadow-md'
+                        : 'border-[#E3D7D7] hover:border-[#AC0C35]/30 hover:bg-white/50'
                     }`}
                   >
                     <div className="mb-6">
-                      <div className="w-32 h-32 mx-auto bg-green-100 rounded-xl flex items-center justify-center">
-                        <ShoppingBag className="w-16 h-16 text-green-600" />
+                      <div className="w-32 h-32 mx-auto bg-[#FDECEF] rounded-xl flex items-center justify-center border border-[#FACDD6]">
+                        <ShoppingBag className="w-16 h-16 text-[#770022]" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">As a buyer</h3>
-                    <p className="text-gray-600 text-sm">
-                      It's a best option for you to explore or do something for all by yourself. Later, you can create a team workspace, that's easy.
+                    <h3 className="text-xl font-semibold mb-2 text-[#1F1B24]">As a buyer</h3>
+                    <p className="text-[#4C434F] text-sm">
+                      Explore products and connect with sellers. Find exactly what you're looking for in our marketplace.
                     </p>
                   </button>
 
@@ -180,18 +215,18 @@ export default function OnboardingPage() {
                     onClick={() => handleRoleSelect('seller')}
                     className={`p-8 rounded-2xl border-2 transition-all duration-200 ${
                       data.role === 'seller'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#AC0C35] bg-[#FDECEF] shadow-md'
+                        : 'border-[#E3D7D7] hover:border-[#AC0C35]/30 hover:bg-white/50'
                     }`}
                   >
                     <div className="mb-6">
-                      <div className="w-32 h-32 mx-auto bg-green-100 rounded-xl flex items-center justify-center">
-                        <Store className="w-16 h-16 text-green-600" />
+                      <div className="w-32 h-32 mx-auto bg-[#FDECEF] rounded-xl flex items-center justify-center border border-[#FACDD6]">
+                        <Store className="w-16 h-16 text-[#770022]" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">As a seller</h3>
-                    <p className="text-gray-600 text-sm">
-                      Let's start collaborating with your teammates and unlock the full access of Woopy. Hope you'll enjoy.
+                    <h3 className="text-xl font-semibold mb-2 text-[#1F1B24]">As a seller</h3>
+                    <p className="text-[#4C434F] text-sm">
+                      Showcase your products and grow your business. Reach customers looking for what you offer.
                     </p>
                   </button>
                 </div>
@@ -199,7 +234,7 @@ export default function OnboardingPage() {
                 <Button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 h-11 rounded-lg font-medium"
+                  className="bg-[#B0112D] hover:bg-[#8A0A2A] text-white px-8 h-12 rounded-lg font-semibold tracking-wide shadow-[0_10px_25px_rgba(172,12,53,0.35)] transition-colors"
                 >
                   Let's start
                 </Button>
@@ -231,14 +266,14 @@ export default function OnboardingPage() {
                         onClick={() => handleCategoryToggle(category.id)}
                         className={`p-6 rounded-xl border-2 transition-all duration-200 ${
                           isSelected
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-[#AC0C35] bg-[#FDECEF] shadow-md'
+                            : 'border-[#E3D7D7] hover:border-[#AC0C35]/30 hover:bg-white/50'
                         }`}
                       >
-                        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-3">
-                          <Icon className="w-6 h-6 text-green-600" />
+                        <div className="w-12 h-12 rounded-lg bg-[#FDECEF] border border-[#FACDD6] flex items-center justify-center mx-auto mb-3">
+                          <Icon className="w-6 h-6 text-[#770022]" />
                         </div>
-                        <h3 className="font-medium text-sm text-center text-gray-900">
+                        <h3 className="font-medium text-sm text-center text-[#1F1B24]">
                           {category.name}
                         </h3>
                       </button>
@@ -250,14 +285,14 @@ export default function OnboardingPage() {
                   <Button
                     variant="ghost"
                     onClick={handleBack}
-                    className="px-6 h-11"
+                    className="px-6 h-12 text-[#4C434F] hover:text-[#1F1B24] hover:bg-gray-100"
                   >
                     Back
                   </Button>
                   <Button
                     onClick={handleNext}
                     disabled={!canProceed()}
-                    className="bg-green-600 hover:bg-green-700 text-white px-8 h-11 rounded-lg font-medium"
+                    className="bg-[#B0112D] hover:bg-[#8A0A2A] text-white px-8 h-12 rounded-lg font-semibold tracking-wide shadow-[0_10px_25px_rgba(172,12,53,0.35)] transition-colors"
                   >
                     Continue
                   </Button>
@@ -265,7 +300,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 3: Location & Notifications */}
+            {/* Step 3: Location */}
             {currentStep === 3 && (
               <div className="flex flex-col items-center justify-center flex-1 max-w-md mx-auto">
                 <div className="text-center mb-10">
@@ -273,13 +308,13 @@ export default function OnboardingPage() {
                     Where are you located?
                   </h2>
                   <p className="text-gray-600">
-                    Share your location to see the closest sellers and products
+                    Share your location to discover the closest sellers and products
                   </p>
                 </div>
 
                 <div className="space-y-4 w-full mb-10">
                   <div className="space-y-2">
-                    <Label htmlFor="city" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="city" className="text-sm font-semibold tracking-wide text-[#1F1B24]">
                       City
                     </Label>
                     <Input
@@ -292,12 +327,12 @@ export default function OnboardingPage() {
                           location: { ...data.location, city: e.target.value },
                         })
                       }
-                      className="h-11 border-gray-300"
+                      className="h-12 bg-white/70 border-[#1F1B24]/15 placeholder:text-[#908694] focus:border-[#AC0C35] focus:ring-[#AC0C35] text-base"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="postalCode" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="postalCode" className="text-sm font-semibold tracking-wide text-[#1F1B24]">
                       Postal Code (Optional)
                     </Label>
                     <Input
@@ -310,25 +345,8 @@ export default function OnboardingPage() {
                           location: { ...data.location, postalCode: e.target.value },
                         })
                       }
-                      className="h-11 border-gray-300"
+                      className="h-12 bg-white/70 border-[#1F1B24]/15 placeholder:text-[#908694] focus:border-[#AC0C35] focus:ring-[#AC0C35] text-base"
                     />
-                  </div>
-
-                  <div className="flex items-start space-x-3 pt-4">
-                    <Checkbox
-                      id="notifications"
-                      checked={data.notifications}
-                      onCheckedChange={(checked: boolean) =>
-                        setData({ ...data, notifications: checked })
-                      }
-                      className="mt-1"
-                    />
-                    <Label
-                      htmlFor="notifications"
-                      className="text-sm cursor-pointer text-gray-700"
-                    >
-                      Get notifications for new listings nearby
-                    </Label>
                   </div>
                 </div>
 
@@ -336,99 +354,23 @@ export default function OnboardingPage() {
                   <Button
                     variant="ghost"
                     onClick={handleBack}
-                    className="px-6 h-11"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    disabled={!canProceed()}
-                    className="bg-green-600 hover:bg-green-700 text-white px-8 h-11 rounded-lg font-medium"
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Profile */}
-            {currentStep === 4 && (
-              <div className="flex flex-col items-center justify-center flex-1 max-w-md mx-auto">
-                <div className="text-center mb-10">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-                    Complete your profile
-                  </h2>
-                  <p className="text-gray-600">
-                    Add a photo and bio to build trust with other users
-                  </p>
-                </div>
-
-                <div className="space-y-6 w-full mb-10">
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700">Profile Photo (Optional)</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
-                        {data.profile.photo ? (
-                          <Image
-                            src={data.profile.photo}
-                            alt="Profile"
-                            width={80}
-                            height={80}
-                            className="rounded-full object-cover"
-                          />
-                        ) : (
-                          <Camera className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <Button variant="outline" className="flex-1 h-10 border-gray-300">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Upload Photo
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                      Short Bio (Optional)
-                    </Label>
-                    <Textarea
-                      id="bio"
-                      placeholder="Tell us about yourself..."
-                      value={data.profile.bio}
-                      onChange={(e) =>
-                        setData({
-                          ...data,
-                          profile: { ...data.profile, bio: e.target.value },
-                        })
-                      }
-                      className="min-h-24 resize-none border-gray-300"
-                      maxLength={150}
-                    />
-                    <p className="text-xs text-gray-500 text-right">
-                      {data.profile.bio.length}/150
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    onClick={handleBack}
-                    className="px-6 h-11"
+                    className="px-6 h-12 text-[#4C434F] hover:text-[#1F1B24] hover:bg-gray-100"
                   >
                     Back
                   </Button>
                   <Button
                     onClick={handleComplete}
-                    className="bg-green-600 hover:bg-green-700 text-white px-8 h-11 rounded-lg font-medium"
+                    disabled={!canProceed()}
+                    className="bg-[#B0112D] hover:bg-[#8A0A2A] text-white px-8 h-12 rounded-lg font-semibold tracking-wide shadow-[0_10px_25px_rgba(172,12,53,0.35)] transition-colors"
                   >
-                    Complete & Start
+                    Finish onboarding
                   </Button>
                 </div>
               </div>
             )}
         </div>
       </div>
+      )}
     </div>
   );
 }

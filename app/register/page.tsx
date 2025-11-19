@@ -142,10 +142,10 @@ export default function RegisterPage() {
           {/* Header */}
           <div className="space-y-4">
             <h1 className="text-4xl font-semibold tracking-tight leading-[1.15]">
-              Hesap oluştur ve <span className="text-[#AC0C35]">başla</span>
+              Create an account and <span className="text-[#AC0C35]">get started</span>
             </h1>
             <p className="text-base text-[#4C434F] font-medium">
-              Bize katıl! Bilgilerini girerek başlayalım.
+              Join us! Enter your information so we can begin.
             </p>
           </div>
 
@@ -257,7 +257,7 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 font-semibold tracking-wide text-white bg-gradient-to-r from-[#AC0C35] via-[#8A0A2A] to-[#6A081F] hover:opacity-90 transition-opacity shadow-[0_10px_25px_rgba(172,12,53,0.35)]"
+              className="w-full h-12 font-semibold tracking-wide text-white bg-[#B0112D] hover:bg-[#8A0A2A] transition-colors shadow-[0_10px_25px_rgba(172,12,53,0.35)]"
               disabled={isLoading}
             >
               {isLoading ? (

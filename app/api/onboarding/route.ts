@@ -33,15 +33,13 @@ export async function POST(req: NextRequest) {
     console.log('🔍 [ONBOARDING] Validating onboarding data...');
     console.log(`🎭 [ONBOARDING] Role: ${data.role}`);
     console.log(`📂 [ONBOARDING] Categories: ${data.categories?.join(', ')}`);
-    console.log(`📍 [ONBOARDING] City: ${data.location?.city}`);
+    console.log(`📍 [ONBOARDING] City: ${data.city}`);
     
     const validatedData = onboardingSchema.parse({
       role: data.role,
       categories: data.categories,
-      city: data.location.city,
-      postalCode: data.location.postalCode || '',
-      notifications: data.notifications,
-      bio: data.profile?.bio || '',
+      city: data.city,
+      postalCode: data.postalCode || '',
     });
     console.log('✅ [ONBOARDING] Data validation passed');
 
@@ -71,8 +69,6 @@ export async function POST(req: NextRequest) {
         categories: validatedData.categories,
         city: validatedData.city,
         postalCode: validatedData.postalCode || null,
-        notifications: validatedData.notifications,
-        bio: validatedData.bio || null,
         onboardingCompleted: true,
       },
       select: {

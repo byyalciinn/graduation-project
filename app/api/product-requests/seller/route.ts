@@ -46,6 +46,16 @@ export async function GET(req: Request) {
             status: true,
             price: true,
             createdAt: true,
+            negotiations: {
+              select: {
+                id: true,
+                createdAt: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
           },
         },
       },
@@ -59,6 +69,7 @@ export async function GET(req: Request) {
       ...request,
       hasOffer: request.offers.length > 0,
       myOffer: request.offers[0] || null,
+      hasNegotiation: request.offers.length > 0 && request.offers[0].negotiations.length > 0,
     }))
 
     return NextResponse.json(requestsWithOfferStatus)

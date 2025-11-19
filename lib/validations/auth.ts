@@ -22,8 +22,6 @@ export const onboardingSchema = z.object({
   categories: z.array(z.string()).min(1, 'Select at least one category'),
   city: z.string().min(1, 'City is required'),
   postalCode: z.string().optional(),
-  notifications: z.boolean().default(true),
-  bio: z.string().max(150, 'Bio must be 150 characters or less').optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

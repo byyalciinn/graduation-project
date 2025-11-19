@@ -126,87 +126,88 @@ export function StepOne({ form }: StepOneProps) {
           />
         </div>
 
-        {/* Category */}
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
+        {/* Category & Warranty */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Select the category that best fits your product.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select
+                  onValueChange={handleCategoryChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {selectedCategory === "elektronik" && (
             <FormItem>
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-muted-foreground" />
-                <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Warranty Status</FormLabel>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Select the category that best fits your product.</p>
+                    <p>Please specify the warranty status for your electronic product.</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
               <Select
-                onValueChange={handleCategoryChange}
-                defaultValue={field.value}
+                onValueChange={(value) => {
+                  const currentDynamicFields = form.getValues("dynamicFields") || {}
+                  form.setValue("dynamicFields", {
+                    ...currentDynamicFields,
+                    warrantyStatus: value,
+                  })
+                }}
+                defaultValue={
+                  (form.getValues("dynamicFields") as any)?.warrantyStatus || ""
+                }
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="Select warranty status" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="yeni-garantili">New - Under Warranty</SelectItem>
+                  <SelectItem value="ikinci-el-garantili">Pre-owned - Under Warranty</SelectItem>
+                  <SelectItem value="ikinci-el-garantisiz">Pre-owned - No Warranty</SelectItem>
+                  <SelectItem value="fark-etmez">No Preference</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
             </FormItem>
           )}
-        />
-
-        {/* Dynamic Field: Warranty Status (only for Electronics) */}
-        {selectedCategory === "elektronik" && (
-          <FormItem>
-            <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4 text-muted-foreground" />
-              <FormLabel>Warranty Status</FormLabel>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Please specify the warranty status for your electronic product.</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <Select
-              onValueChange={(value) => {
-                const currentDynamicFields = form.getValues("dynamicFields") || {}
-                form.setValue("dynamicFields", {
-                  ...currentDynamicFields,
-                  warrantyStatus: value,
-                })
-              }}
-              defaultValue={
-                (form.getValues("dynamicFields") as any)?.warrantyStatus || ""
-              }
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select warranty status" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="yeni-garantili">New - Under Warranty</SelectItem>
-                <SelectItem value="ikinci-el-garantili">Pre-owned - Under Warranty</SelectItem>
-                <SelectItem value="ikinci-el-garantisiz">Pre-owned - No Warranty</SelectItem>
-                <SelectItem value="fark-etmez">No Preference</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormItem>
-        )}
+        </div>
 
         {/* Description */}
         <FormField

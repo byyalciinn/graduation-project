@@ -36,6 +36,7 @@ model User {
   payments       Payment[]        @relation("BuyerPayments")
   addresses      Address[]
   orders         Order[]
+  negotiations   Negotiation[]
 
   @@map("users")
 }
@@ -136,6 +137,9 @@ model Offer {
   buyerResponse     String?        @db.Text
   respondedAt       DateTime?
   
+  // Müzakere
+  negotiations      Negotiation[]
+  
   // Payment relation
   payment           Payment?
   
@@ -148,6 +152,29 @@ model Offer {
   @@map("offers")
   @@index([productRequestId])
   @@index([sellerId])
+}
+
+model Negotiation {
+  id                String         @id @default(cuid())
+  
+  // İlişkiler
+  offerId           String
+  offer             Offer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  senderId          String
+  sender            User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  // Müzakere Detayları
+  message           String         @db.Text
+  proposedPrice     Float?         // Önerilen fiyat (varsa)
+  proposedDelivery  Int?           // Önerilen teslimat süresi (varsa)
+  isAiGenerated     Boolean        @default(false)
+  
+  createdAt         DateTime       @default(now())
+
+  @@map("negotiations")
+  @@index([offerId])
+  @@index([senderId])
 }
 
 model Payment {

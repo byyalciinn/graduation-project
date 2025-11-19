@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -9,11 +9,20 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Package, MapPin, ImageIcon, Eye } from "lucide-react"
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Package, MapPin, ImageIcon, Eye, Sparkles } from "lucide-react"
 import { StepOne } from "./step-one"
 import { StepTwo } from "./step-two"
 import { StepThree } from "./step-three"
 import { StepReview } from "./step-review"
+import { AIAssistant } from "./ai-assistant"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 // Form validation schema
 const formSchema = z.object({
@@ -46,7 +55,12 @@ const steps = [
   { id: 4, name: "Preview", description: "Review and submit", icon: Eye },
 ]
 
-export function MultiStepForm() {
+interface MultiStepFormProps {
+  assistantOpen?: boolean
+  setAssistantOpen?: (open: boolean) => void
+}
+
+export function MultiStepForm({ assistantOpen, setAssistantOpen }: MultiStepFormProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,6 +82,65 @@ export function MultiStepForm() {
     },
     mode: "onChange",
   })
+
+  // Listen for AI suggestions from modal
+  useEffect(() => {
+    const handleAISuggestions = async () => {
+      const suggestionsStr = localStorage.getItem("aiSuggestions")
+      if (suggestionsStr) {
+        try {
+          const suggestions = JSON.parse(suggestionsStr)
+          Object.entries(suggestions).forEach(([field, value]) => {
+            if (field === "warrantyStatus") {
+              form.setValue("dynamicFields", { warrantyStatus: value })
+            } else if (field === "offerDeadline" && typeof value === "string") {
+              // Parse date string to Date object
+              const parts = value.split("/")
+              if (parts.length === 3) {
+                const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+                form.setValue("offerDeadline", date, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+            } else {
+              form.setValue(field as keyof ProductRequestFormData, value as any, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
+          })
+          localStorage.removeItem("aiSuggestions")
+
+          // Check if all required fields are filled
+          setTimeout(async () => {
+            const requiredFields: (keyof ProductRequestFormData)[] = [
+              "productName", "category", "description", "quantity",
+              "deliveryCity", "deliveryDistrict"
+            ]
+            
+            const allFilled = requiredFields.every(field => {
+              const value = form.getValues(field)
+              return value !== "" && value !== null && value !== undefined
+            })
+
+            if (allFilled) {
+              // Validate and progress to preview
+              const isValid = await form.trigger(requiredFields)
+              if (isValid) {
+                setCurrentStep(4) // Jump to preview
+              }
+            }
+          }, 500)
+        } catch (error) {
+          console.error("Error parsing AI suggestions:", error)
+        }
+      }
+    }
+
+    window.addEventListener("aiSuggestionsReady", handleAISuggestions)
+    return () => window.removeEventListener("aiSuggestionsReady", handleAISuggestions)
+  }, [form, setCurrentStep])
 
   const progress = (currentStep / steps.length) * 100
 
@@ -91,6 +164,13 @@ export function MultiStepForm() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     }
+  }
+
+  const handleApplySuggestion = (field: string, value: any) => {
+    form.setValue(field as keyof ProductRequestFormData, value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
   }
 
   const onSubmit = async (data: ProductRequestFormData) => {
